@@ -22,7 +22,7 @@ import java.io.File;
 public class UserConfig {
 
     public static int selectedAccount;
-    public final static int MAX_ACCOUNT_COUNT = 3;
+    public final static int MAX_ACCOUNT_COUNT = 8;
 
     private final Object sync = new Object();
     private boolean configLoaded;
@@ -66,6 +66,7 @@ public class UserConfig {
     public int pendingAppUpdateBuildVersion;
     public long pendingAppUpdateInstallTime;
     public long lastUpdateCheckTime;
+    public boolean isBot;
 
     public volatile byte[] savedPasswordHash;
     public volatile byte[] savedSaltedPassword;
@@ -145,6 +146,7 @@ public class UserConfig {
                 editor.putBoolean("hasSecureData", hasSecureData);
                 editor.putBoolean("notificationsSettingsLoaded3", notificationsSettingsLoaded);
                 editor.putBoolean("notificationsSignUpSettingsLoaded", notificationsSignUpSettingsLoaded);
+                editor.putBoolean("isBot", isBot);
 
                 editor.putInt("3migrateOffsetId", migrateOffsetId);
                 if (migrateOffsetId != -1) {
@@ -292,6 +294,7 @@ public class UserConfig {
             hasSecureData = preferences.getBoolean("hasSecureData", false);
             notificationsSettingsLoaded = preferences.getBoolean("notificationsSettingsLoaded3", false);
             notificationsSignUpSettingsLoaded = preferences.getBoolean("notificationsSignUpSettingsLoaded", false);
+            isBot = preferences.getBoolean("isBot",false);
 
             try {
                 String terms = preferences.getString("terms", null);
@@ -448,6 +451,7 @@ public class UserConfig {
         loginTime = (int) (System.currentTimeMillis() / 1000);
         lastContactsSyncTime = (int) (System.currentTimeMillis() / 1000) - 23 * 60 * 60;
         lastHintsSyncTime = (int) (System.currentTimeMillis() / 1000) - 25 * 60 * 60;
+        isBot = false;
         resetSavedPassword();
         boolean hasActivated = false;
         for (int a = 0; a < MAX_ACCOUNT_COUNT; a++) {

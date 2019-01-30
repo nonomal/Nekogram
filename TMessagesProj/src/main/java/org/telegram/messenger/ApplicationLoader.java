@@ -28,6 +28,7 @@ import android.text.TextUtils;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesUtil;
+import com.google.firebase.FirebaseApp;
 import com.google.firebase.iid.FirebaseInstanceId;
 
 import org.telegram.tgnet.ConnectionsManager;
@@ -155,6 +156,7 @@ public class ApplicationLoader extends Application {
     public void onCreate() {
         super.onCreate();
 
+        FirebaseApp.initializeApp(this);
         applicationContext = getApplicationContext();
         NativeLoader.initNativeLibs(ApplicationLoader.applicationContext);
         ConnectionsManager.native_setJava(false);

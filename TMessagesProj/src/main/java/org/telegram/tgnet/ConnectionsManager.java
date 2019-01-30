@@ -46,6 +46,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import tw.nekomimi.nekogram.NekoConfig;
+
 public class ConnectionsManager {
 
     public final static int ConnectionTypeGeneric = 1;
@@ -289,12 +291,22 @@ public class ConnectionsManager {
     }
 
     public void init(int version, int layer, int apiId, String deviceModel, String systemVersion, String appVersion, String langCode, String systemLangCode, String configPath, String logPath, int userId, boolean enablePushConnection) {
-        SharedPreferences preferences = ApplicationLoader.applicationContext.getSharedPreferences("mainconfig", Activity.MODE_PRIVATE);
+        SharedPreferences preferences = ApplicationLoader.applicationContext.getSharedPreferences("nekoconfig", Activity.MODE_PRIVATE);
         String proxyAddress = preferences.getString("proxy_ip", "");
         String proxyUsername = preferences.getString("proxy_user", "");
         String proxyPassword = preferences.getString("proxy_pass", "");
         String proxySecret = preferences.getString("proxy_secret", "");
         int proxyPort = preferences.getInt("proxy_port", 1080);
+        if (preferences.getBoolean("proxy_enabled", false) && !TextUtils.isEmpty(proxyAddress)) {
+            native_setProxySettings(currentAccount, proxyAddress, proxyPort, proxyUsername, proxyPassword, proxySecret);
+        }
+
+        preferences = ApplicationLoader.applicationContext.getSharedPreferences("mainconfig", Activity.MODE_PRIVATE);
+        proxyAddress = preferences.getString("proxy_ip", "");
+        proxyUsername = preferences.getString("proxy_user", "");
+        proxyPassword = preferences.getString("proxy_pass", "");
+        proxySecret = preferences.getString("proxy_secret", "");
+        proxyPort = preferences.getInt("proxy_port", 1080);
         if (preferences.getBoolean("proxy_enabled", false) && !TextUtils.isEmpty(proxyAddress)) {
             native_setProxySettings(currentAccount, proxyAddress, proxyPort, proxyUsername, proxyPassword, proxySecret);
         }
@@ -650,6 +662,9 @@ public class ConnectionsManager {
         if (Build.VERSION.SDK_INT < 19) {
             return false;
         }
+        if(!NekoConfig.useIPv6){
+            return false;
+        }
         if (BuildVars.LOGS_ENABLED) {
             try {
                 NetworkInterface networkInterface;
@@ -684,7 +699,6 @@ public class ConnectionsManager {
         try {
             NetworkInterface networkInterface;
             Enumeration<NetworkInterface> networkInterfaces = NetworkInterface.getNetworkInterfaces();
-            boolean hasIpv4 = false;
             boolean hasIpv6 = false;
             while (networkInterfaces.hasMoreElements()) {
                 networkInterface = networkInterfaces.nextElement();
@@ -700,15 +714,10 @@ public class ConnectionsManager {
                     }
                     if (inetAddress instanceof Inet6Address) {
                         hasIpv6 = true;
-                    } else if (inetAddress instanceof Inet4Address) {
-                        String addrr = inetAddress.getHostAddress();
-                        if (!addrr.startsWith("192.0.0.")) {
-                            hasIpv4 = true;
-                        }
                     }
                 }
             }
-            if (!hasIpv4 && hasIpv6) {
+            if (hasIpv6) {
                 return true;
             }
         } catch (Throwable e) {

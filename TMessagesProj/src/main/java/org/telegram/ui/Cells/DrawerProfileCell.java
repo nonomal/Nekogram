@@ -38,6 +38,8 @@ import org.telegram.ui.Components.LayoutHelper;
 import org.telegram.ui.ActionBar.Theme;
 import org.telegram.ui.Components.SnowflakesEffect;
 
+import tw.nekomimi.nekogram.NekoConfig;
+
 public class DrawerProfileCell extends FrameLayout {
 
     private BackupImageView avatarImageView;
@@ -185,7 +187,9 @@ public class DrawerProfileCell extends FrameLayout {
         accountsShowed = accounts;
         arrowView.setImageResource(accountsShowed ? R.drawable.collapse_up : R.drawable.collapse_down);
         nameTextView.setText(UserObject.getUserName(user));
-        phoneTextView.setText(PhoneFormat.getInstance().format("+" + user.phone));
+        if(!NekoConfig.hidePhone){
+            phoneTextView.setText(PhoneFormat.getInstance().format("+" + user.phone));
+        }
         AvatarDrawable avatarDrawable = new AvatarDrawable(user);
         avatarDrawable.setColor(Theme.getColor(Theme.key_avatar_backgroundInProfileBlue));
         avatarImageView.setImage(photo, "50_50", avatarDrawable, user);

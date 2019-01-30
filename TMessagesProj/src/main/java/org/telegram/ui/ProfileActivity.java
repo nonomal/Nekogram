@@ -112,6 +112,7 @@ public class ProfileActivity extends BaseFragment implements NotificationCenter.
     private BackupImageView avatarImage;
     private SimpleTextView nameTextView[] = new SimpleTextView[2];
     private SimpleTextView onlineTextView[] = new SimpleTextView[2];
+    private SimpleTextView idTextView;
     private ImageView writeButton;
     private AnimatorSet writeButtonAnimation;
 
@@ -1045,6 +1046,25 @@ public class ProfileActivity extends BaseFragment implements NotificationCenter.
             nameTextView[a].setPivotX(0);
             nameTextView[a].setPivotY(0);
             nameTextView[a].setAlpha(a == 0 ? 0.0f : 1.0f);
+            nameTextView[a].setOnLongClickListener(new SimpleTextView.OnLongClickListener() {
+                public boolean onLongClick(View v) {
+                    AlertDialog.Builder builder = new AlertDialog.Builder(getParentActivity());
+                    builder.setItems(new CharSequence[]{LocaleController.getString("Copy", R.string.Copy)}, (dialogInterface, i) -> {
+                        if (i == 0) {
+                            try {
+                                android.content.ClipboardManager clipboard = (android.content.ClipboardManager) ApplicationLoader.applicationContext.getSystemService(Context.CLIPBOARD_SERVICE);
+                                android.content.ClipData clip = android.content.ClipData.newPlainText("label", ((SimpleTextView) v).getText());
+                                clipboard.setPrimaryClip(clip);
+                                Toast.makeText(getParentActivity(), LocaleController.getString("TextCopied", R.string.TextCopied), Toast.LENGTH_SHORT).show();
+                            } catch (Exception e) {
+                                FileLog.e(e);
+                            }
+                        }
+                    });
+                    showDialog(builder.create());
+                    return false;
+                }
+            });
             frameLayout.addView(nameTextView[a], LayoutHelper.createFrame(LayoutHelper.WRAP_CONTENT, LayoutHelper.WRAP_CONTENT, Gravity.LEFT | Gravity.TOP, 118, 0, a == 0 ? 48 : 0, 0));
 
             onlineTextView[a] = new SimpleTextView(context);
@@ -1054,6 +1074,13 @@ public class ProfileActivity extends BaseFragment implements NotificationCenter.
             onlineTextView[a].setAlpha(a == 0 ? 0.0f : 1.0f);
             frameLayout.addView(onlineTextView[a], LayoutHelper.createFrame(LayoutHelper.WRAP_CONTENT, LayoutHelper.WRAP_CONTENT, Gravity.LEFT | Gravity.TOP, 118, 0, a == 0 ? 48 : 8, 0));
         }
+
+        idTextView = new SimpleTextView(context);
+        idTextView.setTextColor(AvatarDrawable.getProfileTextColorForId(user_id != 0 || ChatObject.isChannel(chat_id, currentAccount) && !currentChat.megagroup ? 5 : chat_id));
+        idTextView.setTextSize(14);
+        idTextView.setGravity(Gravity.LEFT);
+        idTextView.setAlpha(1.0f);
+        frameLayout.addView(idTextView, LayoutHelper.createFrame(LayoutHelper.WRAP_CONTENT, LayoutHelper.WRAP_CONTENT, Gravity.LEFT | Gravity.TOP, 118, 0, 48, 0));
 
         if (user_id != 0) {
             writeButton = new ImageView(context);
@@ -1462,6 +1489,8 @@ public class ProfileActivity extends BaseFragment implements NotificationCenter.
                 nameTextView[a].setTranslationY((float) Math.floor(avatarY) + AndroidUtilities.dp(1.3f) + AndroidUtilities.dp(7) * diff);
                 onlineTextView[a].setTranslationX(-21 * AndroidUtilities.density * diff);
                 onlineTextView[a].setTranslationY((float) Math.floor(avatarY) + AndroidUtilities.dp(24) + (float) Math.floor(11 * AndroidUtilities.density) * diff);
+                idTextView.setTranslationX( -21 * AndroidUtilities.density * diff);
+                idTextView.setTranslationY( (float) Math.floor(avatarY) + AndroidUtilities.dp(32) + (float )Math.floor(22 * AndroidUtilities.density) * diff);
                 float scale = 1.0f + 0.12f * diff;
                 nameTextView[a].setScaleX(scale);
                 nameTextView[a].setScaleY(scale);
@@ -1496,6 +1525,12 @@ public class ProfileActivity extends BaseFragment implements NotificationCenter.
                     }
                     onlineTextView[a].setLayoutParams(layoutParams);
                 }
+                if (diff > 0.85) {
+                    idTextView.setVisibility(View.VISIBLE);
+                } else {
+                    idTextView.setVisibility(View.GONE);
+                }
+
             }
         }
     }
@@ -2577,6 +2612,7 @@ public class ProfileActivity extends BaseFragment implements NotificationCenter.
             onlineTextOverride = null;
         }
 
+        int id = 0;
         if (user_id != 0) {
             TLRPC.User user = MessagesController.getInstance(currentAccount).getUser(user_id);
             TLRPC.FileLocation photo = null;
@@ -2632,7 +2668,12 @@ public class ProfileActivity extends BaseFragment implements NotificationCenter.
                 nameTextView[a].setLeftDrawable(leftIcon);
                 nameTextView[a].setRightDrawable(rightIcon);
             }
-
+            if (photo != null) {
+                idTextView.setText("ID: " + user_id + ", DC: " + photo.dc_id);
+            } else {
+                idTextView.setText("ID: " + user_id);
+            }
+            id = user_id;
             avatarImage.getImageReceiver().setVisible(!PhotoViewer.isShowingImage(photoBig), false);
         } else if (chat_id != 0) {
             TLRPC.Chat chat = MessagesController.getInstance(currentAccount).getChat(chat_id);
@@ -2725,6 +2766,7 @@ public class ProfileActivity extends BaseFragment implements NotificationCenter.
                     }
                 }
             }
+            id = chat_id;
             if (changed) {
                 needLayout();
             }
@@ -2738,6 +2780,33 @@ public class ProfileActivity extends BaseFragment implements NotificationCenter.
             avatarDrawable.setInfo(chat);
             avatarImage.setImage(photo, "50_50", avatarDrawable, chat);
             avatarImage.getImageReceiver().setVisible(!PhotoViewer.isShowingImage(photoBig), false);
+            if (photo != null) {
+                idTextView.setText("ID: " + chat_id + ", DC: " + photo.dc_id);
+            } else {
+                idTextView.setText("ID: " + chat_id);
+            }
+        }
+        if (id != 0) {
+            int finalId = id;
+            idTextView.setOnLongClickListener(new SimpleTextView.OnLongClickListener() {
+                public boolean onLongClick(View v) {
+                    AlertDialog.Builder builder = new AlertDialog.Builder(getParentActivity());
+                    builder.setItems(new CharSequence[]{LocaleController.getString("Copy", R.string.Copy)}, (dialogInterface, i) -> {
+                        if (i == 0) {
+                            try {
+                                android.content.ClipboardManager clipboard = (android.content.ClipboardManager) ApplicationLoader.applicationContext.getSystemService(Context.CLIPBOARD_SERVICE);
+                                android.content.ClipData clip = android.content.ClipData.newPlainText("label", String.valueOf(finalId));
+                                clipboard.setPrimaryClip(clip);
+                                Toast.makeText(getParentActivity(), LocaleController.getString("TextCopied", R.string.TextCopied), Toast.LENGTH_SHORT).show();
+                            } catch (Exception e) {
+                                FileLog.e(e);
+                            }
+                        }
+                    });
+                    showDialog(builder.create());
+                    return false;
+                }
+            });
         }
     }
 
