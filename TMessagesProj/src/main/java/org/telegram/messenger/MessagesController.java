@@ -2864,7 +2864,7 @@ public class MessagesController implements NotificationCenter.NotificationCenter
     }
 
     public void checkProxyInfo(final boolean reset) {
-        Utilities.stageQueue.postRunnable(() -> checkProxyInfoInternal(reset));
+        //Utilities.stageQueue.postRunnable(() -> checkProxyInfoInternal(reset));
     }
 
     private void checkProxyInfoInternal(boolean reset) {

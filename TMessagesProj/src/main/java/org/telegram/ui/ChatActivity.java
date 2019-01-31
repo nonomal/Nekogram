@@ -11163,8 +11163,16 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
                             options.add(2);
                             items.add(LocaleController.getString("NoQuoteForward", R.string.NoQuoteForward));
                             options.add(95);
-                            items.add(LocaleController.getString("Repeat", R.string.Repeat));
-                            options.add(94);
+                            boolean allowRepeat;
+                            if (ChatObject.isChannel(currentChat) && !currentChat.megagroup) {
+                                allowRepeat =  currentChat.creator || (currentChat.admin_rights != null && currentChat.admin_rights.post_messages);
+                            } else {
+                                allowRepeat = true;
+                            }
+                            if(allowRepeat){
+                                items.add(LocaleController.getString("Repeat", R.string.Repeat));
+                                options.add(94);
+                            }
                         }
                         if (allowUnpin) {
                             items.add(LocaleController.getString("UnpinMessage", R.string.UnpinMessage));

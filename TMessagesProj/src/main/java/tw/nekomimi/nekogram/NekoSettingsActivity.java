@@ -170,7 +170,7 @@ public class NekoSettingsActivity extends BaseFragment {
                 editor.putBoolean("allowBigEmoji", SharedConfig.allowBigEmoji);
                 editor.commit();
                 if (view instanceof TextCheckCell) {
-                    ((TextCheckCell) view).setChecked(SharedConfig.useSystemEmoji);
+                    ((TextCheckCell) view).setChecked(SharedConfig.allowBigEmoji);
                 }
             } else if (position == nameOrderRow) {
                 AlertDialog.Builder builder = new AlertDialog.Builder(getParentActivity());
