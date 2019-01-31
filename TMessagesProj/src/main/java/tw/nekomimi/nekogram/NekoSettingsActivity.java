@@ -312,7 +312,7 @@ public class NekoSettingsActivity extends BaseFragment {
         @Override
         public boolean isEnabled(RecyclerView.ViewHolder holder) {
             int position = holder.getAdapterPosition();
-            return position == emojiRow || position == hidePhoneRow || position == inappCameraRow ||
+            return position == hidePhoneRow || position == inappCameraRow ||
                     position == ignoreBlockedRow || position == useSystemEmojiRow || position == singleBigEmojiRow ||
                     position == ipv6Row || position == nameOrderRow || position == nekoProxyRow;
         }

@@ -200,7 +200,7 @@ public class NekoProxyActivity extends BaseFragment implements NotificationCente
         currentConnectionState = ConnectionsManager.getInstance(currentAccount).getConnectionState();
 
         NotificationCenter.getGlobalInstance().addObserver(this, NotificationCenter.proxySettingsChanged);
-        NotificationCenter.getGlobalInstance().addObserver(this, NotificationCenter.proxyCheckDone);
+        NotificationCenter.getGlobalInstance().addObserver(this, NotificationCenter.nekoProxyCheckDone);
         NotificationCenter.getInstance(currentAccount).addObserver(this, NotificationCenter.didUpdateConnectionState);
 
         final SharedPreferences preferences = ApplicationLoader.applicationContext.getSharedPreferences("nekoconfig", Activity.MODE_PRIVATE);
@@ -215,7 +215,7 @@ public class NekoProxyActivity extends BaseFragment implements NotificationCente
     public void onFragmentDestroy() {
         super.onFragmentDestroy();
         NotificationCenter.getGlobalInstance().removeObserver(this, NotificationCenter.proxySettingsChanged);
-        NotificationCenter.getGlobalInstance().removeObserver(this, NotificationCenter.proxyCheckDone);
+        NotificationCenter.getGlobalInstance().removeObserver(this, NotificationCenter.nekoProxyCheckDone);
         NotificationCenter.getInstance(currentAccount).removeObserver(this, NotificationCenter.didUpdateConnectionState);
     }
 
@@ -363,7 +363,7 @@ public class NekoProxyActivity extends BaseFragment implements NotificationCente
                     proxyInfo.ping = time;
                     proxyInfo.available = true;
                 }
-                NotificationCenter.getGlobalInstance().postNotificationName(NotificationCenter.proxyCheckDone, proxyInfo);
+                NotificationCenter.getGlobalInstance().postNotificationName(NotificationCenter.nekoProxyCheckDone, proxyInfo);
             }));
         }
     }
@@ -400,7 +400,7 @@ public class NekoProxyActivity extends BaseFragment implements NotificationCente
                     }
                 }
             }
-        } else if (id == NotificationCenter.proxyCheckDone) {
+        } else if (id == NotificationCenter.nekoProxyCheckDone) {
             if (listView != null) {
                 NekoConfig.ProxyInfo proxyInfo = (NekoConfig.ProxyInfo) args[0];
                 int idx = NekoConfig.proxyList.indexOf(proxyInfo);

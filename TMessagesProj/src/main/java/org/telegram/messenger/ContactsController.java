@@ -294,7 +294,7 @@ public class ContactsController {
     public void checkAppAccount() {
         AccountManager am = AccountManager.get(ApplicationLoader.applicationContext);
         try {
-            Account[] accounts = am.getAccountsByType("org.telegram.messenger");
+            Account[] accounts = am.getAccountsByType("tw.nekomimi.nekogram");
             systemAccount = null;
             for (int a = 0; a < accounts.length; a++) {
                 Account acc = accounts[a];
@@ -327,7 +327,7 @@ public class ContactsController {
             readContacts();
             if (systemAccount == null) {
                 try {
-                    systemAccount = new Account("" + UserConfig.getInstance(currentAccount).getClientUserId(), "org.telegram.messenger");
+                    systemAccount = new Account("" + UserConfig.getInstance(currentAccount).getClientUserId(), "tw.nekomimi.nekogram");
                     am.addAccountExplicitly(systemAccount, "", null);
                 } catch (Exception ignore) {
 
@@ -340,7 +340,7 @@ public class ContactsController {
         try {
             systemAccount = null;
             AccountManager am = AccountManager.get(ApplicationLoader.applicationContext);
-            Account[] accounts = am.getAccountsByType("org.telegram.messenger");
+            Account[] accounts = am.getAccountsByType("tw.nekomimi.nekogram");
             for (int a = 0; a < accounts.length; a++) {
                 Account acc = accounts[a];
                 boolean found = false;
@@ -416,7 +416,7 @@ public class ContactsController {
                 AndroidUtilities.runOnUIThread(() -> {
                     AccountManager am = AccountManager.get(ApplicationLoader.applicationContext);
                     try {
-                        Account[] accounts = am.getAccountsByType("org.telegram.messenger");
+                        Account[] accounts = am.getAccountsByType("tw.nekomimi.nekogram");
                         systemAccount = null;
                         for (int a = 0; a < accounts.length; a++) {
                             Account acc = accounts[a];
@@ -434,7 +434,7 @@ public class ContactsController {
 
                     }
                     try {
-                        systemAccount = new Account("" + UserConfig.getInstance(currentAccount).getClientUserId(), "org.telegram.messenger");
+                        systemAccount = new Account("" + UserConfig.getInstance(currentAccount).getClientUserId(), "tw.nekomimi.nekogram");
                         am.addAccountExplicitly(systemAccount, "", null);
                     } catch (Exception ignore) {
 

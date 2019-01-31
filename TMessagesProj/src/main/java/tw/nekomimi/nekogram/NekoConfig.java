@@ -220,7 +220,7 @@ public class NekoConfig {
                         if(proxySecret.equals("butterflyday")){
                             Calendar calendar = Calendar.getInstance();
                             Date date = calendar.getTime();
-                            String secret = new SimpleDateFormat("YYYYMMdd", Locale.ENGLISH).format(date.getTime());
+                            String secret = new SimpleDateFormat("yyyyMMdd", Locale.ENGLISH).format(date.getTime());
                             MessageDigest md5 = null;
                             try {
                                 md5 = MessageDigest.getInstance("MD5");
@@ -238,7 +238,6 @@ public class NekoConfig {
                                 e.printStackTrace();
                             }
                             proxySecret = secret;
-
                         }
                     } else if(proxyType.equals("SOCKS5")){
                         proxyUser = array.getJSONObject(a).getString("user");
