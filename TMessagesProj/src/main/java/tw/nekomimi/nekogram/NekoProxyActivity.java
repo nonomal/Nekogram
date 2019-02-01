@@ -53,9 +53,10 @@ public class NekoProxyActivity extends BaseFragment implements NotificationCente
     private int rowCount;
     private int useProxyRow;
     private int useProxyDetailRow;
+    private int proxyUpdateRow;
+    private int useProxyDetail2Row;
     private int proxyStartRow;
     private int proxyEndRow;
-    private int proxyUpdateRow;
     private int proxyDetailRow;
 
     public class TextDetailProxyCell extends FrameLayout {
@@ -65,6 +66,8 @@ public class NekoProxyActivity extends BaseFragment implements NotificationCente
         private ImageView checkImageView;
         private NekoConfig.ProxyInfo currentInfo;
         private Drawable checkDrawable;
+
+        private boolean needDivider;
 
         private int color;
 
@@ -107,19 +110,19 @@ public class NekoProxyActivity extends BaseFragment implements NotificationCente
                     builder.show();
                 }
             });
-
-            setWillNotDraw(false);
         }
 
         @Override
         protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
-            super.onMeasure(MeasureSpec.makeMeasureSpec(MeasureSpec.getSize(widthMeasureSpec), MeasureSpec.EXACTLY), MeasureSpec.makeMeasureSpec(AndroidUtilities.dp(64) + 1, MeasureSpec.EXACTLY));
+            super.onMeasure(MeasureSpec.makeMeasureSpec(MeasureSpec.getSize(widthMeasureSpec), MeasureSpec.EXACTLY), MeasureSpec.makeMeasureSpec(AndroidUtilities.dp(64) + (needDivider ? 1 : 0), MeasureSpec.EXACTLY));
         }
 
-        public void setProxy(NekoConfig.ProxyInfo proxyInfo) {
+        public void setProxy(NekoConfig.ProxyInfo proxyInfo, boolean divider) {
             textView.setText(proxyInfo.name);
             currentInfo = proxyInfo;
+            needDivider = divider;
             updateStatus();
+            setWillNotDraw(!needDivider);
         }
 
         public void updateStatus() {
@@ -187,7 +190,9 @@ public class NekoProxyActivity extends BaseFragment implements NotificationCente
 
         @Override
         protected void onDraw(Canvas canvas) {
-            canvas.drawLine(LocaleController.isRTL ? 0 : AndroidUtilities.dp(20), getMeasuredHeight() - 1, getMeasuredWidth() - (LocaleController.isRTL ? AndroidUtilities.dp(20) : 0), getMeasuredHeight() - 1, Theme.dividerPaint);
+            if (needDivider) {
+                canvas.drawLine(LocaleController.isRTL ? 0 : AndroidUtilities.dp(20), getMeasuredHeight() - 1, getMeasuredWidth() - (LocaleController.isRTL ? AndroidUtilities.dp(20) : 0), getMeasuredHeight() - 1, Theme.dividerPaint);
+            }
         }
     }
 
@@ -331,6 +336,7 @@ public class NekoProxyActivity extends BaseFragment implements NotificationCente
         useProxyRow = rowCount++;
         useProxyDetailRow = rowCount++;
         proxyUpdateRow = rowCount++;
+        useProxyDetail2Row = rowCount++;
         if (!NekoConfig.proxyList.isEmpty()) {
             proxyStartRow = rowCount;
             rowCount += NekoConfig.proxyList.size();
@@ -432,18 +438,13 @@ public class NekoProxyActivity extends BaseFragment implements NotificationCente
         public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
             switch (holder.getItemViewType()) {
                 case 0: {
-                    if (position == proxyDetailRow) {
-                        holder.itemView.setBackgroundDrawable(Theme.getThemedDrawable(mContext, R.drawable.greydivider_bottom, Theme.key_windowBackgroundGrayShadow));
-                    } else {
-                        holder.itemView.setBackgroundDrawable(Theme.getThemedDrawable(mContext, R.drawable.greydivider, Theme.key_windowBackgroundGrayShadow));
-                    }
                     break;
                 }
                 case 1: {
                     TextSettingsCell textCell = (TextSettingsCell) holder.itemView;
-                    textCell.setTextColor(Theme.getColor(Theme.key_windowBackgroundWhiteBlackText));
                     if (position == proxyUpdateRow) {
-                        textCell.setText(LocaleController.getString("NekoProxyUpdate", R.string.NekoProxyUpdate), true);
+                        textCell.setTextColor(Theme.getColor(Theme.key_windowBackgroundWhiteBlueText));
+                        textCell.setText(LocaleController.getString("NekoProxyUpdate", R.string.NekoProxyUpdate), false);
                     }
                     break;
                 }
@@ -453,7 +454,7 @@ public class NekoProxyActivity extends BaseFragment implements NotificationCente
                 case 3: {
                     TextCheckCell checkCell = (TextCheckCell) holder.itemView;
                     if (position == useProxyRow) {
-                        checkCell.setTextAndCheck(LocaleController.getString("UseProxySettings", R.string.UseProxySettings), useProxySettings, false);
+                        checkCell.setTextAndCheck(LocaleController.getString("UseNekoProxy", R.string.UseNekoProxy), useProxySettings, false);
                     }
                     break;
                 }
@@ -463,7 +464,7 @@ public class NekoProxyActivity extends BaseFragment implements NotificationCente
                 case 5: {
                     TextDetailProxyCell cell = (TextDetailProxyCell) holder.itemView;
                     NekoConfig.ProxyInfo info = NekoConfig.proxyList.get(position - proxyStartRow);
-                    cell.setProxy(info);
+                    cell.setProxy(info, !(position - proxyStartRow == NekoConfig.proxyList.size() - 1));
                     cell.setChecked(NekoConfig.currentProxy == info);
                     break;
                 }
@@ -522,7 +523,7 @@ public class NekoProxyActivity extends BaseFragment implements NotificationCente
 
         @Override
         public int getItemViewType(int position) {
-            if (position == useProxyDetailRow || position == proxyDetailRow) {
+            if (position == useProxyDetailRow || position == proxyDetailRow || position ==  useProxyDetail2Row) {
                 return 0;
             } else if (position == proxyUpdateRow) {
                 return 1;

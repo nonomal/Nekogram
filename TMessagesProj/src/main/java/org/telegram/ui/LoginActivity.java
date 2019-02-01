@@ -13,6 +13,7 @@ import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.animation.AnimatorSet;
 import android.animation.ObjectAnimator;
+import android.animation.StateListAnimator;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.Dialog;
@@ -1111,51 +1112,55 @@ public class LoginActivity extends BaseFragment {
             textView2.setLineSpacing(AndroidUtilities.dp(2), 1.0f);
             addView(textView2, LayoutHelper.createLinear(LayoutHelper.WRAP_CONTENT, LayoutHelper.WRAP_CONTENT, LocaleController.isRTL ? Gravity.RIGHT : Gravity.LEFT, 0, 28, 0, 10));
 
-            if (newAccount) {
-                checkBoxCell = new CheckBoxCell(context, 2);
-                checkBoxCell.setText(LocaleController.getString("SyncContacts", R.string.SyncContacts), "", syncContacts, false);
-                addView(checkBoxCell, LayoutHelper.createLinear(LayoutHelper.WRAP_CONTENT, LayoutHelper.MATCH_PARENT, Gravity.LEFT | Gravity.TOP, 0, 0, 0, 0));
-                checkBoxCell.setOnClickListener(new OnClickListener() {
+            checkBoxCell = new CheckBoxCell(context, 2);
+            checkBoxCell.setText(LocaleController.getString("SyncContacts", R.string.SyncContacts), "", syncContacts, false);
+            addView(checkBoxCell, LayoutHelper.createLinear(LayoutHelper.WRAP_CONTENT, LayoutHelper.MATCH_PARENT, Gravity.LEFT | Gravity.TOP, 0, 0, 0, 0));
+            checkBoxCell.setOnClickListener(new OnClickListener() {
 
-                    private Toast visibleToast;
+                private Toast visibleToast;
 
-                    @Override
-                    public void onClick(View v) {
-                        if (getParentActivity() == null) {
-                            return;
-                        }
-                        CheckBoxCell cell = (CheckBoxCell) v;
-                        syncContacts = !syncContacts;
-                        cell.setChecked(syncContacts, true);
-                        try {
-                            if (visibleToast != null) {
-                                visibleToast.cancel();
-                            }
-                        } catch (Exception e) {
-                            FileLog.e(e);
-                        }
-                        if (syncContacts) {
-                            visibleToast = Toast.makeText(getParentActivity(), LocaleController.getString("SyncContactsOn", R.string.SyncContactsOn), Toast.LENGTH_SHORT);
-                            visibleToast.show();
-                        } else {
-                            visibleToast = Toast.makeText(getParentActivity(), LocaleController.getString("SyncContactsOff", R.string.SyncContactsOff), Toast.LENGTH_SHORT);
-                            visibleToast.show();
-                        }
+                @Override
+                public void onClick(View v) {
+                    if (getParentActivity() == null) {
+                        return;
                     }
-                });
-            } else {
-                nekoProxyText = new TextView(context);
-                nekoProxyText.setText(LocaleController.getString("NekoProxy",R.string.NekoProxy));
-                nekoProxyText.setGravity(LocaleController.isRTL ? Gravity.RIGHT : Gravity.LEFT);
-                nekoProxyText.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 14);
-                nekoProxyText.setTextColor(Theme.getColor(Theme.key_windowBackgroundWhiteBlueText4));
-                nekoProxyText.setLineSpacing(AndroidUtilities.dp(2), 1.0f);
-                nekoProxyText.setPadding(0, AndroidUtilities.dp(2), 0, AndroidUtilities.dp(12));
-                addView(nekoProxyText, LayoutHelper.createLinear(LayoutHelper.WRAP_CONTENT, LayoutHelper.WRAP_CONTENT, LocaleController.isRTL ? Gravity.RIGHT : Gravity.LEFT, 0, 0, 0, 0));
-                nekoProxyText.setOnClickListener(v -> {
-                    presentFragment(new NekoProxyActivity());
-                });
+                    CheckBoxCell cell = (CheckBoxCell) v;
+                    syncContacts = !syncContacts;
+                    cell.setChecked(syncContacts, true);
+                    try {
+                        if (visibleToast != null) {
+                            visibleToast.cancel();
+                        }
+                    } catch (Exception e) {
+                        FileLog.e(e);
+                    }
+                    if (syncContacts) {
+                        visibleToast = Toast.makeText(getParentActivity(), LocaleController.getString("SyncContactsOn", R.string.SyncContactsOn), Toast.LENGTH_SHORT);
+                        visibleToast.show();
+                    } else {
+                        visibleToast = Toast.makeText(getParentActivity(), LocaleController.getString("SyncContactsOff", R.string.SyncContactsOff), Toast.LENGTH_SHORT);
+                        visibleToast.show();
+                    }
+                }
+            });
+
+            TextView nekoProxyText = new TextView(context);
+            nekoProxyText.setText(LocaleController.getString("UseNekoProxy", R.string.UseNekoProxy));
+            nekoProxyText.setGravity(LocaleController.isRTL ? Gravity.RIGHT : Gravity.LEFT);
+            nekoProxyText.setTextColor(0xffffffff);
+            nekoProxyText.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 16);
+            nekoProxyText.setBackgroundResource(R.drawable.regbtn_states);
+            if (Build.VERSION.SDK_INT >= 21) {
+                StateListAnimator animator = new StateListAnimator();
+                animator.addState(new int[]{android.R.attr.state_pressed}, ObjectAnimator.ofFloat(nekoProxyText, "translationZ", AndroidUtilities.dp(2), AndroidUtilities.dp(4)).setDuration(200));
+                animator.addState(new int[]{}, ObjectAnimator.ofFloat(nekoProxyText, "translationZ", AndroidUtilities.dp(4), AndroidUtilities.dp(2)).setDuration(200));
+                nekoProxyText.setStateListAnimator(animator);
             }
+            nekoProxyText.setPadding(AndroidUtilities.dp(20), AndroidUtilities.dp(10), AndroidUtilities.dp(20), AndroidUtilities.dp(10));
+            addView(nekoProxyText, LayoutHelper.createLinear(LayoutHelper.WRAP_CONTENT, LayoutHelper.WRAP_CONTENT, LocaleController.isRTL ? Gravity.RIGHT : Gravity.LEFT, 0, 0, 0, 0));
+            nekoProxyText.setOnClickListener(v -> {
+                presentFragment(new NekoProxyActivity());
+            });
 
             HashMap<String, String> languageMap = new HashMap<>();
             try {

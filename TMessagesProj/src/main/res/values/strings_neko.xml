@@ -16,4 +16,18 @@
     <string name="NekoProxyLearnMore">Tap to learn more</string>
     <string name="NekoProxyUpdate">Update proxy list</string>
     <string name="NekoProxyProvidedBy">Proxy provided by **%1$s**</string>
+    <string name="NoQuoteForward">NoQuote forward</string>
+    <string name="Repeat">Repeat</string>
+    <string name="UseNekoProxy">Use Neko Proxy</string>
+    <string name="All">All</string>
+    <string name="TabsSettings">Tabs</string>
+    <string name="TabsToBottom">Tabs to bottom</string>
+    <string name="HideTabs">Hide tabs</string>
+    <string name="TabsHideAll">Hide all</string>
+    <string name="TabsHideUsers">Hide users</string>
+    <string name="TabsHideGroups">Hide groups</string>
+    <string name="TabsHideChannels">Hide channels</string>
+    <string name="TabsHideBots">Hide bots</string>
+    <string name="TabsHideAdmins">Hide admins</string>
+    <string name="TabsHideCountersRow">Hide counters</string>
 </resources>

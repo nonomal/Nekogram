@@ -48,6 +48,8 @@ import java.util.Locale;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
 
+import tw.nekomimi.nekogram.TabsHelper;
+
 public class MessagesController implements NotificationCenter.NotificationCenterDelegate {
 
     private ConcurrentHashMap<Integer, TLRPC.Chat> chats = new ConcurrentHashMap<>(100, 1.0f, 2);
@@ -762,6 +764,9 @@ public class MessagesController implements NotificationCenter.NotificationCenter
         dialogsServerOnly.clear();
         dialogsForward.clear();
         dialogsGroupsOnly.clear();
+
+        TabsHelper.getInstance(currentAccount).cleanup();
+
         dialogMessagesByIds.clear();
         dialogMessagesByRandomIds.clear();
         channelAdmins.clear();
@@ -2381,6 +2386,7 @@ public class MessagesController implements NotificationCenter.NotificationCenter
                             });
                         }
                         dialogsGroupsOnly.remove(dialog);
+                        TabsHelper.getInstance(currentAccount).deleteDialog(dialog);
                         dialogsForward.remove(dialog);
                         dialogs_dict.remove(did);
                         dialogs_read_inbox_max.remove(did);
@@ -9593,6 +9599,7 @@ public class MessagesController implements NotificationCenter.NotificationCenter
                 dialogs.remove(dialog);
                 dialogsServerOnly.remove(dialog);
                 dialogsGroupsOnly.remove(dialog);
+                TabsHelper.getInstance(currentAccount).deleteDialog(dialog);
                 dialogsForward.remove(dialog);
                 dialogs_dict.remove(dialog.id);
                 dialogs_read_inbox_max.remove(dialog.id);
@@ -9709,6 +9716,7 @@ public class MessagesController implements NotificationCenter.NotificationCenter
     }
 
     public void sortDialogs(SparseArray<TLRPC.Chat> chatsDict) {
+        TabsHelper.getInstance(currentAccount).cleanup();
         dialogsServerOnly.clear();
         dialogsGroupsOnly.clear();
         dialogsForward.clear();
@@ -9727,6 +9735,7 @@ public class MessagesController implements NotificationCenter.NotificationCenter
             TLRPC.TL_dialog d = dialogs.get(a);
             int high_id = (int) (d.id >> 32);
             int lower_id = (int) d.id;
+            TabsHelper.getInstance(currentAccount).sortDialogs(d, high_id, lower_id);
             if (lower_id == selfId) {
                 dialogsForward.add(0, d);
                 selfAdded = true;

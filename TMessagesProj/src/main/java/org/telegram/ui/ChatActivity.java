@@ -10728,6 +10728,7 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
                     } else if (a == 2) {
                         cell.setText(LocaleController.formatString("DeleteAllFrom", R.string.DeleteAllFrom, ContactsController.formatName(user.first_name, user.last_name)), "", false, false);
                     } else if (a == 3) {
+                        cell.setTextColor(Theme.getColor(Theme.key_windowBackgroundWhiteRedText));
                         cell.setText(LocaleController.getString("DeleteAllFromSelf", R.string.DeleteAllFromSelf), "", false, false);
                     }
                     cell.setPadding(LocaleController.isRTL ? AndroidUtilities.dp(16) : AndroidUtilities.dp(8), 0, LocaleController.isRTL ? AndroidUtilities.dp(8) : AndroidUtilities.dp(16), 0);

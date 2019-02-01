@@ -16,4 +16,18 @@
     <string name="NekoProxyLearnMore">点按了解详情</string>
     <string name="NekoProxyUpdate">更新代理列表</string>
     <string name="NekoProxyProvidedBy">代理由 **%1$s** 提供</string>
+    <string name="NoQuoteForward">无引用转发</string>
+    <string name="Repeat">复读</string>
+    <string name="UseNekoProxy">使用 Neko 代理</string>
+    <string name="All">所有</string>
+    <string name="TabsSettings">分页</string>
+    <string name="TabsToBottom">置于底部</string>
+    <string name="HideTabs">隐藏分页</string>
+    <string name="TabsHideAll">隐藏总分页</string>
+    <string name="TabsHideUsers">隐藏用户</string>
+    <string name="TabsHideGroups">隐藏群组</string>
+    <string name="TabsHideChannels">隐藏频道</string>
+    <string name="TabsHideBots">隐藏机器人</string>
+    <string name="TabsHideAdmins">隐藏我管理的群组或频道</string>
+    <string name="TabsHideCountersRow">隐藏未读计数</string>
 </resources>

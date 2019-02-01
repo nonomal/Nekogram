@@ -42,6 +42,8 @@ import org.telegram.ui.Components.RecyclerListView;
 
 import java.util.ArrayList;
 
+import tw.nekomimi.nekogram.TabsHelper;
+
 public class DialogsAdapter extends RecyclerListView.SelectionAdapter {
 
     private Context mContext;
@@ -53,6 +55,14 @@ public class DialogsAdapter extends RecyclerListView.SelectionAdapter {
     private boolean hasHints;
     private int currentAccount = UserConfig.selectedAccount;
     private boolean showContacts;
+
+    public int getDialogsType() {
+        return dialogsType;
+    }
+
+    public void setDialogsType(int type) {
+        dialogsType = type;
+    }
 
     public DialogsAdapter(Context context, int type, boolean onlySelect) {
         mContext = context;
@@ -104,8 +114,10 @@ public class DialogsAdapter extends RecyclerListView.SelectionAdapter {
             return MessagesController.getInstance(currentAccount).dialogsGroupsOnly;
         } else if (dialogsType == 3) {
             return MessagesController.getInstance(currentAccount).dialogsForward;
+        } else {
+            return TabsHelper.getInstance(currentAccount).getDialogs(dialogsType);
         }
-        return null;
+        //return null;
     }
 
     @Override
@@ -160,7 +172,7 @@ public class DialogsAdapter extends RecyclerListView.SelectionAdapter {
 
     @Override
     public void notifyDataSetChanged() {
-        hasHints = dialogsType == 0 && !isOnlySelect && !MessagesController.getInstance(currentAccount).hintDialogs.isEmpty();
+        hasHints = dialogsType == 4 && !isOnlySelect && !MessagesController.getInstance(currentAccount).hintDialogs.isEmpty();
         super.notifyDataSetChanged();
     }
 
