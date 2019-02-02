@@ -19,6 +19,7 @@ public class MessageHelper {
     private int mergeReqId;
     private int lastReqId;
     private int messagesSearchCount[] = new int[]{0, 0};
+
     public MessageHelper(int num) {
         currentAccount = num;
     }

@@ -3,18 +3,13 @@ package tw.nekomimi.nekogram;
 import android.app.Activity;
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.os.Build;
-import android.text.TextUtils;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
-import android.widget.LinearLayout;
 
 import org.telegram.messenger.AndroidUtilities;
 import org.telegram.messenger.ApplicationLoader;
-import org.telegram.messenger.DataQuery;
-import org.telegram.messenger.FileLog;
 import org.telegram.messenger.LocaleController;
 import org.telegram.messenger.MessagesController;
 import org.telegram.messenger.NotificationCenter;
@@ -27,10 +22,8 @@ import org.telegram.tgnet.ConnectionsManager;
 import org.telegram.ui.ActionBar.ActionBar;
 import org.telegram.ui.ActionBar.AlertDialog;
 import org.telegram.ui.ActionBar.BaseFragment;
-import org.telegram.ui.ActionBar.BottomSheet;
 import org.telegram.ui.ActionBar.Theme;
 import org.telegram.ui.ActionBar.ThemeDescription;
-import org.telegram.ui.Cells.CheckBoxCell;
 import org.telegram.ui.Cells.EmptyCell;
 import org.telegram.ui.Cells.HeaderCell;
 import org.telegram.ui.Cells.NotificationsCheckCell;
@@ -41,9 +34,6 @@ import org.telegram.ui.Cells.TextSettingsCell;
 import org.telegram.ui.Components.LayoutHelper;
 import org.telegram.ui.Components.NumberPicker;
 import org.telegram.ui.Components.RecyclerListView;
-import org.telegram.ui.StickersActivity;
-import org.telegram.ui.ThemeActivity;
-import org.telegram.ui.WallpapersListActivity;
 
 public class NekoSettingsActivity extends BaseFragment {
 
@@ -67,6 +57,9 @@ public class NekoSettingsActivity extends BaseFragment {
     private int hideBotsRow;
     private int hideAdminsRow;
     private int hideTabsCountersRow;
+    private int tabsHeightRow;
+    private int disableTabsScrollingRow;
+    private int disableTabsInfiniteScrollingRow;
     private int tabs2Row;
 
     private int emojiRow;
@@ -102,6 +95,9 @@ public class NekoSettingsActivity extends BaseFragment {
         hideBotsRow = rowCount++;
         hideAdminsRow = rowCount++;
         hideTabsCountersRow = rowCount++;
+        disableTabsScrollingRow = rowCount++;
+        disableTabsInfiniteScrollingRow = rowCount++;
+        tabsHeightRow = rowCount++;
         tabs2Row = rowCount++;
         emojiRow = rowCount++;
         useSystemEmojiRow = rowCount++;
@@ -226,7 +222,7 @@ public class NekoSettingsActivity extends BaseFragment {
                                 editor.putString("proxy_hash", NekoConfig.currentProxy.hash);
                                 editor.commit();
                             }
-                        }else {
+                        } else {
                             presentFragment(new NekoProxyActivity());
                             return;
                         }
@@ -297,6 +293,37 @@ public class NekoSettingsActivity extends BaseFragment {
                     ((TextCheckCell) view).setChecked(TabsConfig.tabsToBottom);
                 }
                 NotificationCenter.getGlobalInstance().postNotificationName(NotificationCenter.refreshTabs, 1);
+            } else if (position == tabsHeightRow) {
+                if (getParentActivity() == null) {
+                    return;
+                }
+                AlertDialog.Builder builder = new AlertDialog.Builder(getParentActivity());
+                builder.setTitle(LocaleController.getString("TabsHeight", R.string.TabsHeight));
+                final NumberPicker numberPicker = new NumberPicker(getParentActivity());
+                numberPicker.setMinValue(0);
+                numberPicker.setMaxValue(100);
+                numberPicker.setValue(TabsConfig.tabsHeight);
+                builder.setView(numberPicker);
+                builder.setNegativeButton(LocaleController.getString("Done", R.string.Done), (dialog, which) -> {
+                    TabsConfig.setTabsHeight(numberPicker.getValue());
+                    if (listAdapter != null) {
+                        listAdapter.notifyItemChanged(position);
+                    }
+                    NotificationCenter.getGlobalInstance().postNotificationName(NotificationCenter.refreshTabs, 2);
+                });
+                showDialog(builder.create());
+            } else if (position == disableTabsScrollingRow) {
+                TabsConfig.toggleDisableTabsScrolling();
+                if (view instanceof TextCheckCell) {
+                    ((TextCheckCell) view).setChecked(TabsConfig.disableTabsScrolling);
+                }
+                NotificationCenter.getGlobalInstance().postNotificationName(NotificationCenter.refreshTabs, 2);
+            } else if (position == disableTabsInfiniteScrollingRow) {
+                TabsConfig.toggleDisableTabsInfiniteScrolling();
+                if (view instanceof TextCheckCell) {
+                    ((TextCheckCell) view).setChecked(TabsConfig.disableTabsInfiniteScrolling);
+                }
+                NotificationCenter.getGlobalInstance().postNotificationName(NotificationCenter.refreshTabs, 2);
             }
         });
 
@@ -334,7 +361,8 @@ public class NekoSettingsActivity extends BaseFragment {
                     break;
                 }
                 case 2: {
-                     if (position == nameOrderRow) {
+                    TextSettingsCell textCell = (TextSettingsCell) holder.itemView;
+                    if (position == nameOrderRow) {
                         String value;
                         switch (NekoConfig.nameOrder) {
                             case 2:
@@ -345,7 +373,9 @@ public class NekoSettingsActivity extends BaseFragment {
                                 value = LocaleController.getString("FirstLast", R.string.FirstLast);
                                 break;
                         }
-                        ((TextSettingsCell) holder.itemView).setTextAndValue(LocaleController.getString("NameOrder", R.string.NameOrder), value, false);
+                        textCell.setTextAndValue(LocaleController.getString("NameOrder", R.string.NameOrder), value, false);
+                    } else if (position == tabsHeightRow) {
+                        textCell.setTextAndValue(LocaleController.getString("TabsHeight", R.string.TabsHeight), String.format("%d", TabsConfig.tabsHeight), false);
                     }
                     break;
                 }
@@ -353,34 +383,38 @@ public class NekoSettingsActivity extends BaseFragment {
                     TextCheckCell textCell = (TextCheckCell) holder.itemView;
                     if (position == ipv6Row) {
                         textCell.setTextAndCheck(LocaleController.getString("IPv6", R.string.IPv6), NekoConfig.useIPv6, false);
-                    } else if (position == hidePhoneRow){
+                    } else if (position == hidePhoneRow) {
                         textCell.setTextAndCheck(LocaleController.getString("HidePhone", R.string.HidePhone), NekoConfig.hidePhone, true);
-                    } else if (position == inappCameraRow){
+                    } else if (position == inappCameraRow) {
                         textCell.setTextAndCheck(LocaleController.getString("DebugMenuEnableCamera", R.string.DebugMenuEnableCamera), SharedConfig.inappCamera, true);
-                    } else if (position == useSystemEmojiRow){
+                    } else if (position == useSystemEmojiRow) {
                         textCell.setTextAndCheck(LocaleController.getString("EmojiUseDefault", R.string.EmojiUseDefault), SharedConfig.useSystemEmoji, true);
-                    } else if (position == singleBigEmojiRow){
+                    } else if (position == singleBigEmojiRow) {
                         textCell.setTextAndCheck(LocaleController.getString("EmojiBigSize", R.string.EmojiBigSize), SharedConfig.allowBigEmoji, false);
-                    } else if (position == ignoreBlockedRow){
+                    } else if (position == ignoreBlockedRow) {
                         textCell.setTextAndCheck(LocaleController.getString("IgnoreBlocked", R.string.IgnoreBlocked), NekoConfig.ignoreBlocked, true);
-                    } else if (position == hideUsersRow){
+                    } else if (position == hideUsersRow) {
                         textCell.setTextAndCheck(LocaleController.getString("TabsHideUsers", R.string.TabsHideUsers), TabsConfig.hideUsers, true);
-                    } else if (position == hideTabsRow){
+                    } else if (position == hideTabsRow) {
                         textCell.setTextAndCheck(LocaleController.getString("HideTabs", R.string.HideTabs), TabsConfig.hideTabs, true);
-                    } else if (position == hideTabsCountersRow){
-                        textCell.setTextAndCheck(LocaleController.getString("TabsHideCountersRow", R.string.TabsHideCountersRow), TabsConfig.hideTabsCounters, false);
-                    } else if (position == hideGroupsRow){
+                    } else if (position == hideTabsCountersRow) {
+                        textCell.setTextAndCheck(LocaleController.getString("TabsHideCountersRow", R.string.TabsHideCountersRow), TabsConfig.hideTabsCounters, true);
+                    } else if (position == hideGroupsRow) {
                         textCell.setTextAndCheck(LocaleController.getString("TabsHideGroups", R.string.TabsHideGroups), TabsConfig.hideGroups, true);
-                    } else if (position == hideChannelsRow){
+                    } else if (position == hideChannelsRow) {
                         textCell.setTextAndCheck(LocaleController.getString("TabsHideChannels", R.string.TabsHideChannels), TabsConfig.hideChannels, true);
-                    } else if (position == hideBotsRow){
+                    } else if (position == hideBotsRow) {
                         textCell.setTextAndCheck(LocaleController.getString("TabsHideBots", R.string.TabsHideBots), TabsConfig.hideBots, true);
-                    } else if (position == hideALlRow){
+                    } else if (position == hideALlRow) {
                         textCell.setTextAndCheck(LocaleController.getString("TabsHideAll", R.string.TabsHideAll), TabsConfig.hideALl, true);
-                    } else if (position == hideAdminsRow){
+                    } else if (position == hideAdminsRow) {
                         textCell.setTextAndCheck(LocaleController.getString("TabsHideAdmins", R.string.TabsHideAdmins), TabsConfig.hideAdmins, true);
-                    } else if (position == tabsToBottomRow){
+                    } else if (position == tabsToBottomRow) {
                         textCell.setTextAndCheck(LocaleController.getString("TabsToBottom", R.string.TabsToBottom), TabsConfig.tabsToBottom, true);
+                    } else if (position == disableTabsScrollingRow) {
+                        textCell.setTextAndCheck(LocaleController.getString("TabsDisableScrolling", R.string.TabsDisableScrolling), TabsConfig.disableTabsScrolling, true);
+                    } else if (position == disableTabsInfiniteScrollingRow) {
+                        textCell.setTextAndCheck(LocaleController.getString("TabsDisableInfiniteScrolling", R.string.TabsDisableInfiniteScrolling), TabsConfig.disableTabsInfiniteScrolling, true);
                     }
                     break;
                 }
@@ -419,7 +453,8 @@ public class NekoSettingsActivity extends BaseFragment {
                     position == ignoreBlockedRow || position == useSystemEmojiRow || position == singleBigEmojiRow ||
                     position == ipv6Row || position == nameOrderRow || position == nekoProxyRow || position == hideAdminsRow ||
                     position == hideALlRow || position == hideBotsRow || position == hideChannelsRow || position == hideGroupsRow ||
-                    position == hideTabsCountersRow || position == hideTabsRow || position == hideUsersRow || position == tabsToBottomRow;
+                    position == hideTabsCountersRow || position == hideTabsRow || position == hideUsersRow || position == tabsToBottomRow ||
+                    position == tabsHeightRow || position == disableTabsScrollingRow || position == disableTabsInfiniteScrollingRow;
         }
 
         @Override
@@ -458,12 +493,13 @@ public class NekoSettingsActivity extends BaseFragment {
         public int getItemViewType(int position) {
             if (position == settings2Row || position == emoji2Row || position == connection2Row || position == tabs2Row) {
                 return 1;
-            } else if (position == nameOrderRow) {
+            } else if (position == nameOrderRow || position == tabsHeightRow) {
                 return 2;
-            } else if (position == ipv6Row  || position == hidePhoneRow || position == inappCameraRow ||
+            } else if (position == ipv6Row || position == hidePhoneRow || position == inappCameraRow ||
                     position == ignoreBlockedRow || position == useSystemEmojiRow || position == singleBigEmojiRow || position == hideAdminsRow ||
                     position == hideALlRow || position == hideBotsRow || position == hideChannelsRow || position == hideGroupsRow ||
-                    position == hideTabsCountersRow || position == hideTabsRow || position == hideUsersRow || position == tabsToBottomRow) {
+                    position == hideTabsCountersRow || position == hideTabsRow || position == hideUsersRow || position == tabsToBottomRow ||
+                    position == disableTabsScrollingRow || position == disableTabsInfiniteScrollingRow) {
                 return 3;
             } else if (position == settingsRow || position == connectionRow || position == emojiRow || position == tabsRow) {
                 return 4;

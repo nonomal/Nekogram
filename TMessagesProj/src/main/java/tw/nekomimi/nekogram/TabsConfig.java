@@ -22,8 +22,11 @@ public class TabsConfig {
     public static boolean hideBots;
     public static boolean hideAdmins;
     public static boolean hideTabsCounters;
+    public static boolean disableTabsScrolling;
+    public static boolean disableTabsInfiniteScrolling;
     public static int chatsTabCounterSize = AndroidUtilities.isTablet() ? 13 : 11;
     public static int currentTab;
+    public static int tabsHeight = 40;
 
     static {
         loadConfig();
@@ -44,7 +47,10 @@ public class TabsConfig {
                 editor.putBoolean("hideBots", hideBots);
                 editor.putBoolean("hideAdmins", hideAdmins);
                 editor.putBoolean("hideTabsCounters", hideTabsCounters);
+                editor.putBoolean("disableTabsScrolling", disableTabsScrolling);
+                editor.putBoolean("disableTabsInfiniteScrolling", disableTabsInfiniteScrolling);
                 editor.putInt("currentTab", currentTab);
+                editor.putInt("tabsHeight", tabsHeight);
                 editor.commit();
             } catch (Exception e) {
                 FileLog.e(e);
@@ -68,7 +74,10 @@ public class TabsConfig {
             hideBots = preferences.getBoolean("hideBots", false);
             hideAdmins = preferences.getBoolean("hideAdmins", false);
             hideTabsCounters = preferences.getBoolean("hideTabsCounters", false);
-            currentTab = preferences.getInt("currentTab",0);
+            disableTabsScrolling = preferences.getBoolean("disableTabsScrolling", false);
+            disableTabsInfiniteScrolling = preferences.getBoolean("disableTabsInfiniteScrolling", true);
+            currentTab = preferences.getInt("currentTab", 0);
+            tabsHeight = preferences.getInt("tabsHeight", 40);
             configLoaded = true;
         }
     }
@@ -137,6 +146,22 @@ public class TabsConfig {
         editor.commit();
     }
 
+    public static void toggleDisableTabsInfiniteScrolling() {
+        disableTabsInfiniteScrolling = !disableTabsInfiniteScrolling;
+        SharedPreferences preferences = ApplicationLoader.applicationContext.getSharedPreferences("nekoconfig", Activity.MODE_PRIVATE);
+        SharedPreferences.Editor editor = preferences.edit();
+        editor.putBoolean("disableTabsInfiniteScrolling", disableTabsInfiniteScrolling);
+        editor.commit();
+    }
+
+    public static void toggleDisableTabsScrolling() {
+        disableTabsScrolling = !disableTabsScrolling;
+        SharedPreferences preferences = ApplicationLoader.applicationContext.getSharedPreferences("nekoconfig", Activity.MODE_PRIVATE);
+        SharedPreferences.Editor editor = preferences.edit();
+        editor.putBoolean("disableTabsScrolling", disableTabsScrolling);
+        editor.commit();
+    }
+
     public static void toggleHideTabsCounters() {
         hideTabsCounters = !hideTabsCounters;
         SharedPreferences preferences = ApplicationLoader.applicationContext.getSharedPreferences("nekoconfig", Activity.MODE_PRIVATE);
@@ -150,6 +175,14 @@ public class TabsConfig {
         SharedPreferences preferences = ApplicationLoader.applicationContext.getSharedPreferences("nekoconfig", Activity.MODE_PRIVATE);
         SharedPreferences.Editor editor = preferences.edit();
         editor.putInt("currentTab", currentTab);
+        editor.commit();
+    }
+
+    public static void setTabsHeight(int height) {
+        tabsHeight = height;
+        SharedPreferences preferences = ApplicationLoader.applicationContext.getSharedPreferences("nekoconfig", Activity.MODE_PRIVATE);
+        SharedPreferences.Editor editor = preferences.edit();
+        editor.putInt("tabsHeight", tabsHeight);
         editor.commit();
     }
 }

@@ -19,6 +19,7 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
+
 import org.telegram.messenger.AndroidUtilities;
 import org.telegram.messenger.FileLog;
 import org.telegram.ui.ActionBar.Theme;
@@ -33,6 +34,7 @@ public class TabsPagerTitleStrip extends HorizontalScrollView {
 
     public interface PlusScrollSlidingTabStripDelegate {
         void onTabsUpdated();
+
         void onTabClick();
     }
 
@@ -148,13 +150,10 @@ public class TabsPagerTitleStrip extends HorizontalScrollView {
         tabsContainer.addView(tab, expandedTabLayoutParams);
         view.setBackgroundResource(btnBgRes);
         view.setOnClickListener(v -> {
-            if (position == pager.getCurrentItem())
-            {
+            if (position == pager.getCurrentItem()) {
                 if (delegate != null)
                     delegate.onTabClick();
-            }
-            else
-            {
+            } else {
                 if (pager != null)
                     pager.setCurrentItem(position);
             }
@@ -192,13 +191,11 @@ public class TabsPagerTitleStrip extends HorizontalScrollView {
                 if (view instanceof ImageButton) {
                     ((ImageButton) frame.getChildAt(0)).setColorFilter(tabTextIconUnselectedColor, PorterDuff.Mode.SRC_IN); // Previous
                     ((ImageButton) view).setColorFilter(tabTextIconSelectedColor, PorterDuff.Mode.SRC_IN); // Selected
-                }
-                else if (view instanceof TextView) {
+                } else if (view instanceof TextView) {
                     ((TextView) frame.getChildAt(0)).setTextColor(tabTextIconUnselectedColor); // Previous
                     ((TextView) view).setTextColor(tabTextIconSelectedColor); // Selected
                 }
-            }
-            catch (Exception e) {
+            } catch (Exception e) {
                 FileLog.e(e);
             }
         }
@@ -232,8 +229,8 @@ public class TabsPagerTitleStrip extends HorizontalScrollView {
             View tab = tabsContainer.getChildAt(i);
             tab.setPadding(0, 0, 0, 0);
 
-                if (tab.getLayoutParams() != expandedTabLayoutParams)
-                    tab.setLayoutParams(expandedTabLayoutParams);
+            if (tab.getLayoutParams() != expandedTabLayoutParams)
+                tab.setLayoutParams(expandedTabLayoutParams);
 
         }
 

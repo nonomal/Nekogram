@@ -9,31 +9,23 @@ import android.util.Base64;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.telegram.messenger.AndroidUtilities;
 import org.telegram.messenger.ApplicationLoader;
 import org.telegram.messenger.BuildVars;
 import org.telegram.messenger.FileLog;
-import org.telegram.messenger.LocaleController;
-import org.telegram.messenger.MessagesController;
 import org.telegram.messenger.NotificationCenter;
 import org.telegram.messenger.Utilities;
-import org.telegram.tgnet.ConnectionsManager;
 import org.telegram.tgnet.NativeByteBuffer;
 import org.telegram.tgnet.SerializedData;
 
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.text.SimpleDateFormat;
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Collections;
 import java.util.Date;
 import java.util.Locale;
 
@@ -79,7 +71,7 @@ public class NekoConfig {
             useIPv6 = preferences.getBoolean("useIPv6", false);
             hidePhone = preferences.getBoolean("hidePhone", true);
             ignoreBlocked = preferences.getBoolean("ignoreBlocked", false);
-            nameOrder = preferences.getInt("nameOrder",1);
+            nameOrder = preferences.getInt("nameOrder", 1);
             configLoaded = true;
         }
     }
@@ -133,7 +125,7 @@ public class NekoConfig {
         public boolean available;
         public long availableCheckTime;
 
-        public ProxyInfo(String a, int p, String u, String pw, String s, String n, String h , String pr) {
+        public ProxyInfo(String a, int p, String u, String pw, String s, String n, String h, String pr) {
             address = a;
             port = p;
             username = u;
@@ -215,9 +207,9 @@ public class NekoConfig {
                     String proxySecret = null;
                     String proxyUser = null;
                     String proxyPass = null;
-                    if(proxyType.equals("MTProxy")){
+                    if (proxyType.equals("MTProxy")) {
                         proxySecret = array.getJSONObject(a).getString("secret");
-                        if(proxySecret.equals("butterflyday")){
+                        if (proxySecret.equals("butterflyday")) {
                             Calendar calendar = Calendar.getInstance();
                             Date date = calendar.getTime();
                             String secret = new SimpleDateFormat("yyyyMMdd", Locale.ENGLISH).format(date.getTime());
@@ -239,11 +231,11 @@ public class NekoConfig {
                             }
                             proxySecret = secret;
                         }
-                    } else if(proxyType.equals("SOCKS5")){
+                    } else if (proxyType.equals("SOCKS5")) {
                         proxyUser = array.getJSONObject(a).getString("user");
                         proxyPass = array.getJSONObject(a).getString("pass");
                     }
-                    arrayList.add(new ProxyInfo(proxyAddr,proxyPort,proxyUser,proxyPass,proxySecret,proxyName,proxyHash,proxyProvider));
+                    arrayList.add(new ProxyInfo(proxyAddr, proxyPort, proxyUser, proxyPass, proxySecret, proxyName, proxyHash, proxyProvider));
                 }
                 proxyList = arrayList;
                 saveProxyList();
@@ -269,12 +261,14 @@ public class NekoConfig {
             }
             return null;
         }
+
         @Override
         protected void onPostExecute(final NativeByteBuffer result) {
             NotificationCenter.getGlobalInstance().postNotificationName(NotificationCenter.proxySettingsChanged);
             currentTask = null;
         }
     }
+
     public static void updateProxyList() {
         Utilities.stageQueue.postRunnable(() -> {
             if (currentTask != null) {

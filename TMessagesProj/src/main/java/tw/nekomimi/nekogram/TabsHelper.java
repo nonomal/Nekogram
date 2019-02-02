@@ -22,6 +22,7 @@ public class TabsHelper {
 
     private int currentAccount;
     private static volatile TabsHelper[] Instance = new TabsHelper[UserConfig.MAX_ACCOUNT_COUNT];
+
     public static TabsHelper getInstance(int num) {
         TabsHelper localInstance = Instance[num];
         if (localInstance == null) {
@@ -34,6 +35,7 @@ public class TabsHelper {
         }
         return localInstance;
     }
+
     public TabsHelper(int num) {
         currentAccount = num;
     }
@@ -85,7 +87,7 @@ public class TabsHelper {
                 }
                 if (chat != null && (chat.creator || ChatObject.hasAdminRights(chat)))
                     dialogsAdmin.add(dialog);
-            } else if(lower_id < 0){
+            } else if (lower_id < 0) {
                 dialogsGroups.add(dialog);
             } else {
                 TLRPC.User user = MessagesController.getInstance(currentAccount).getUser((int) dialog.id);
@@ -102,7 +104,7 @@ public class TabsHelper {
                 dialogsUsers.add(dialog);
         }
     }
-    
+
     public ArrayList<TLRPC.TL_dialog> getDialogs(int type) {
         switch (type) {
             case DialogType.All:

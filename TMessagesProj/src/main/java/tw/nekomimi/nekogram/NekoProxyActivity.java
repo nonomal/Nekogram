@@ -1,4 +1,5 @@
 package tw.nekomimi.nekogram;
+
 import android.app.Activity;
 import android.app.Dialog;
 import android.content.Context;
@@ -23,7 +24,6 @@ import org.telegram.messenger.DownloadController;
 import org.telegram.messenger.LocaleController;
 import org.telegram.messenger.NotificationCenter;
 import org.telegram.messenger.R;
-import org.telegram.messenger.SharedConfig;
 import org.telegram.messenger.support.widget.DefaultItemAnimator;
 import org.telegram.messenger.support.widget.LinearLayoutManager;
 import org.telegram.messenger.support.widget.RecyclerView;
@@ -269,7 +269,7 @@ public class NekoProxyActivity extends BaseFragment implements NotificationCente
                             editor.putString("proxy_hash", NekoConfig.currentProxy.hash);
                             editor.commit();
                         }
-                    }else {
+                    } else {
                         NekoConfig.updateProxyList();
                         return;
                     }
@@ -523,7 +523,7 @@ public class NekoProxyActivity extends BaseFragment implements NotificationCente
 
         @Override
         public int getItemViewType(int position) {
-            if (position == useProxyDetailRow || position == proxyDetailRow || position ==  useProxyDetail2Row) {
+            if (position == useProxyDetailRow || position == proxyDetailRow || position == useProxyDetail2Row) {
                 return 0;
             } else if (position == proxyUpdateRow) {
                 return 1;

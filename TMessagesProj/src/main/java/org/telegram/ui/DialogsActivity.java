@@ -45,7 +45,6 @@ import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.TabHost;
 
 import org.telegram.messenger.AndroidUtilities;
 import org.telegram.messenger.ApplicationLoader;
@@ -208,13 +207,14 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
                 lp.setMargins(0, 0, 0, 0);
                 listView.setPadding(0, 0, 0, 0);
                 actionBar.setCastShadows(true);
-                if (dialogsType > 3) {
-                    updateDialogsType(dialogsType = TabsHelper.DialogType.All);
+                if (dialogsType > 4) {
+                    dialogsType = TabsHelper.DialogType.All;
+                    updateDialogsType(dialogsType);
                 }
             } else {
                 actionBar.setCastShadows(TabsConfig.tabsToBottom);
                 tabsView.setVisibility(View.VISIBLE);
-                int height = AndroidUtilities.dp(40);
+                int height = AndroidUtilities.dp(TabsConfig.tabsHeight);
                 ViewGroup.LayoutParams params = tabsView.getLayoutParams();
                 if (params != null) {
                     params.height = height;
@@ -253,11 +253,12 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
         }
 
         public boolean onTouch(View view, MotionEvent event) {
-            if (TabsConfig.hideTabs || searching)
+            if (TabsConfig.hideTabs || searching || dialogsType < 4 || TabsConfig.disableTabsScrolling) {
                 return false;
-
-            if (tabsView != null)
-                tabsView.getPager().onTouchEvent(event);
+            }
+            if (tabsView != null) {
+               tabsView.getPager().onTouchEvent(event);
+            }
 
             switch (event.getAction()) {
                 case 0:
@@ -1170,7 +1171,7 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
         tabsView.setListener(new TabsView.Listener() {
             @Override
             public void onPageSelected(int position, int tabIndex) {
-                if (dialogsType != TabsView.dialogTypes[tabIndex]) {
+                if (dialogsType != TabsView.dialogTypes[tabIndex] && !(TabsConfig.hideTabs || dialogsType < 4 || searching)) {
                     updateDialogsType(TabsView.dialogTypes[tabIndex]);
                     neeLoadMoreChats();
                 }
@@ -1185,7 +1186,7 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
                     listView.scrollToPosition(0);
             }
         });
-        contentView.addView(tabsView, LayoutHelper.createFrame(LayoutHelper.MATCH_PARENT, 40,
+        contentView.addView(tabsView, LayoutHelper.createFrame(LayoutHelper.MATCH_PARENT, TabsConfig.tabsHeight,
                 TabsConfig.tabsToBottom ? Gravity.BOTTOM : Gravity.TOP));
         refreshTabsViewAndListView();
 
@@ -1199,7 +1200,7 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
         progressView.setVisibility(View.GONE);
         contentView.addView(progressView, LayoutHelper.createFrame(LayoutHelper.WRAP_CONTENT, LayoutHelper.WRAP_CONTENT, Gravity.CENTER));
 
-        int bottomMargin = !TabsConfig.hideTabs && TabsConfig.tabsToBottom ? 40 : 0;
+        int bottomMargin = !TabsConfig.hideTabs && TabsConfig.tabsToBottom ? TabsConfig.tabsHeight : 0;
         floatingButtonContainer = new FrameLayout(context);
         floatingButtonContainer.setVisibility(onlySelect ? View.GONE : View.VISIBLE);
         contentView.addView(floatingButtonContainer, LayoutHelper.createFrame((Build.VERSION.SDK_INT >= 21 ? 56 : 60) + 20, (Build.VERSION.SDK_INT >= 21 ? 56 : 60) + 14, (LocaleController.isRTL ? Gravity.LEFT : Gravity.RIGHT) | Gravity.BOTTOM, LocaleController.isRTL ? 4 : 0, 0, LocaleController.isRTL ? 0 : 4, bottomMargin));
@@ -2123,7 +2124,7 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
                 FrameLayout.LayoutParams layoutParams = (FrameLayout.LayoutParams) floatingButtonContainer.getLayoutParams();
                 layoutParams.bottomMargin = AndroidUtilities.dp(!TabsConfig.hideTabs &&
                         TabsConfig.tabsToBottom ?
-                        40 : 0);
+                        TabsConfig.tabsHeight : 0);
                 floatingButtonContainer.setLayoutParams(layoutParams);
             }
 

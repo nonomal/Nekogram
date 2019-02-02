@@ -198,6 +198,9 @@ public class DialogsAdapter extends RecyclerListView.SelectionAdapter {
                 break;
             case 1:
                 view = new LoadingCell(mContext);
+                if (UserConfig.getInstance(currentAccount).isBot) {
+                    view = new View(mContext);
+                }
                 break;
             case 2: {
                 HeaderCell headerCell = new HeaderCell(mContext);

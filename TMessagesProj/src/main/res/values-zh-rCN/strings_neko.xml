@@ -23,11 +23,14 @@
     <string name="TabsSettings">分页</string>
     <string name="TabsToBottom">置于底部</string>
     <string name="HideTabs">隐藏分页</string>
-    <string name="TabsHideAll">隐藏总分页</string>
-    <string name="TabsHideUsers">隐藏用户</string>
-    <string name="TabsHideGroups">隐藏群组</string>
-    <string name="TabsHideChannels">隐藏频道</string>
-    <string name="TabsHideBots">隐藏机器人</string>
-    <string name="TabsHideAdmins">隐藏我管理的群组或频道</string>
+    <string name="TabsHideAll">隐藏「全部」</string>
+    <string name="TabsHideUsers">隐藏「用户」</string>
+    <string name="TabsHideGroups">隐藏「群组」</string>
+    <string name="TabsHideChannels">隐藏「频道」</string>
+    <string name="TabsHideBots">隐藏「机器人」</string>
+    <string name="TabsHideAdmins">隐藏「管理的群组频道」</string>
     <string name="TabsHideCountersRow">隐藏未读计数</string>
+    <string name="TabsHeight">高度</string>
+    <string name="TabsDisableScrolling">禁用滑动</string>
+    <string name="TabsDisableInfiniteScrolling">禁用无限滑动</string>
 </resources>

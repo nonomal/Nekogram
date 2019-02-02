@@ -2,12 +2,6 @@ package tw.nekomimi.nekogram;
 
 import android.content.Context;
 import android.database.DataSetObserver;
-import android.graphics.Canvas;
-import android.graphics.PorterDuff;
-import android.graphics.PorterDuffColorFilter;
-import android.graphics.Rect;
-import android.graphics.drawable.Drawable;
-import android.os.Build;
 import android.support.annotation.NonNull;
 import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
@@ -16,21 +10,20 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
+
 import org.telegram.messenger.AndroidUtilities;
-import org.telegram.messenger.LocaleController;
 import org.telegram.messenger.MessagesController;
 import org.telegram.messenger.NotificationCenter;
 import org.telegram.messenger.R;
 import org.telegram.messenger.UserConfig;
 import org.telegram.tgnet.TLRPC;
-import org.telegram.ui.ActionBar.ActionBar;
 import org.telegram.ui.ActionBar.Theme;
 import org.telegram.ui.Components.LayoutHelper;
 
 import java.util.ArrayList;
 
 public class TabsView extends FrameLayout implements NotificationCenter.NotificationCenterDelegate {
-    public static final int[] dialogTypes = new int[] {
+    public static final int[] dialogTypes = new int[]{
             TabsHelper.DialogType.All,
             TabsHelper.DialogType.Users,
             TabsHelper.DialogType.Groups,
@@ -39,23 +32,14 @@ public class TabsView extends FrameLayout implements NotificationCenter.Notifica
             TabsHelper.DialogType.Admin
     };
 
-    private static final String[] tabTitles = {
-            LocaleController.getString("All", R.string.All),
-            LocaleController.getString("Users", R.string.Users_other),
-            LocaleController.getString("Groups", R.string.Groups_other),
-            LocaleController.getString("Channels", R.string.Channels_other),
-            LocaleController.getString("Bots", R.string.Bot),
-            LocaleController.getString("Admin", R.string.ChatAdmin)
-    };
-
     private static final int[] tabIcons = {
-                    R.drawable.menu_chats,
-                    R.drawable.usersearch,
-                    R.drawable.menu_newgroup,
-                    R.drawable.menu_broadcast,
-                    R.drawable.tab_bot,
-                    R.drawable.profile_admin
-            };
+            R.drawable.menu_chats,
+            R.drawable.usersearch,
+            R.drawable.menu_newgroup,
+            R.drawable.menu_broadcast,
+            R.drawable.tab_bot,
+            R.drawable.profile_admin
+    };
 
     public enum TabIndex {
         All(0),
@@ -74,23 +58,22 @@ public class TabsView extends FrameLayout implements NotificationCenter.Notifica
 
     private class Tab {
         public final TabIndex index;
-        public final String title;
         public final int icon;
 
         Tab(TabIndex index) {
             this.index = index;
-            this.title = tabTitles[index.value];
             this.icon = tabIcons[index.value];
         }
     }
 
     public interface Listener {
         void onPageSelected(int position, int tabIndex);
+
         void onTabClick();
     }
 
     private ArrayList<Tab> tabsArray = new ArrayList<>();
-    private int[] indexToPosition = new int[] { -1, -1, -1, -1, -1, -1, -1, -1, -1 };
+    private int[] indexToPosition = new int[]{-1, -1, -1, -1, -1, -1, -1, -1, -1};
     private TabsPagerTitleStrip tabsPagerTitleStrip;
     private ViewPager pager;
     private int currentTabIndex = TabsConfig.currentTab;
@@ -123,6 +106,7 @@ public class TabsView extends FrameLayout implements NotificationCenter.Notifica
 
                 return super.onInterceptTouchEvent(ev);
             }
+
         };
         loadTabs();
         addView(pager, 0, LayoutHelper.createFrame(LayoutHelper.MATCH_PARENT, LayoutHelper.MATCH_PARENT));
@@ -163,7 +147,8 @@ public class TabsView extends FrameLayout implements NotificationCenter.Notifica
             private boolean loop;
 
             @Override
-            public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {}
+            public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
+            }
 
             @Override
             public void onPageSelected(int position) {
@@ -182,9 +167,8 @@ public class TabsView extends FrameLayout implements NotificationCenter.Notifica
                                 pager.getAdapter().getCount() - 1 : 0), 100);
                         loop = false;
                     }
-                }
-                else if (state == 1 && pager.getAdapter() != null)
-                    loop = currentPage == 0 || currentPage == pager.getAdapter().getCount() - 1;
+                } else if (state == 1 && pager.getAdapter() != null)
+                    loop = !TabsConfig.disableTabsInfiniteScrolling && (currentPage == 0 || currentPage == pager.getAdapter().getCount() - 1);
                 else if (state == 2)
                     loop = false;
             }
@@ -366,9 +350,5 @@ public class TabsView extends FrameLayout implements NotificationCenter.Notifica
             return tabsArray.get(position).icon;
         }
 
-        @Override
-        public String getPageTitle(int position) {
-            return tabsArray.get(position).title;
-        }
     }
 }
