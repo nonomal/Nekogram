@@ -149,10 +149,7 @@ public class LaunchActivity extends Activity implements ActionBarLayout.ActionBa
 
     private Runnable lockRunnable;
 
-    private class DrawerItemTouchHelperCallback extends ItemTouchHelper.SimpleCallback {
-        DrawerItemTouchHelperCallback() {
-            super(ItemTouchHelper.UP | ItemTouchHelper.DOWN, 0);
-        }
+    private class DrawerItemTouchHelperCallback extends ItemTouchHelper.Callback {
 
         @Override
         public boolean isLongPressDragEnabled() {
@@ -190,14 +187,6 @@ public class LaunchActivity extends Activity implements ActionBarLayout.ActionBa
         public void clearView(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder) {
             super.clearView(recyclerView, viewHolder);
             viewHolder.itemView.setPressed(false);
-        }
-
-        @Override
-        public int getDragDirs(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder) {
-            if (viewHolder.getItemViewType() == 4 && drawerLayoutAdapter.getAccountsCount() > 1)
-                return ItemTouchHelper.UP | ItemTouchHelper.DOWN;
-
-            return 0;
         }
 
         @Override

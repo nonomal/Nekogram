@@ -460,7 +460,7 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
                             unreadFloatingButtonContainer.setTranslationY(AndroidUtilities.dp(74));
                         }*/
                         floatingHidden = true;
-                        floatingButtonContainer.setTranslationY(AndroidUtilities.dp(!TabsConfig.hideTabs && TabsConfig.tabsToBottom ? 150 : 100));
+                        floatingButtonContainer.setTranslationY(AndroidUtilities.dp(!TabsConfig.hideTabs && TabsConfig.tabsToBottom ? 100 + TabsConfig.tabsHeight : 100));
                         hideFloatingButton(false);
                     }
                     if (listView.getAdapter() != dialogsAdapter) {
@@ -1945,7 +1945,7 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
             floatingButtonContainer.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
                 @Override
                 public void onGlobalLayout() {
-                    floatingButtonContainer.setTranslationY((floatingHidden ? (!TabsConfig.hideTabs && TabsConfig.tabsToBottom) ? AndroidUtilities.dp(150) : AndroidUtilities.dp(100)  : -additionalFloatingTranslation));
+                    floatingButtonContainer.setTranslationY((floatingHidden ? (!TabsConfig.hideTabs && TabsConfig.tabsToBottom) ? AndroidUtilities.dp(100 + TabsConfig.tabsHeight) : AndroidUtilities.dp(100)  : -additionalFloatingTranslation));
                     //unreadFloatingButtonContainer.setTranslationY(floatingHidden ? AndroidUtilities.dp(74) : 0);
                     floatingButtonContainer.setClickable(!floatingHidden);
                     if (floatingButtonContainer != null) {
@@ -2191,7 +2191,7 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
         }
         floatingHidden = hide;
         AnimatorSet animatorSet = new AnimatorSet();
-        animatorSet.playTogether(ObjectAnimator.ofFloat(floatingButtonContainer, View.TRANSLATION_Y,  (floatingHidden ? AndroidUtilities.dp(!TabsConfig.hideTabs && TabsConfig.tabsToBottom ? 150 : 100) : -additionalFloatingTranslation))/*,
+        animatorSet.playTogether(ObjectAnimator.ofFloat(floatingButtonContainer, View.TRANSLATION_Y,  (floatingHidden ? AndroidUtilities.dp(!TabsConfig.hideTabs && TabsConfig.tabsToBottom ? 100 + TabsConfig.tabsHeight : 100) : -additionalFloatingTranslation))/*,
                 ObjectAnimator.ofFloat(unreadFloatingButtonContainer, View.TRANSLATION_Y, floatingHidden ? AndroidUtilities.dp(74) : 0)*/);
         animatorSet.setDuration(300);
         animatorSet.setInterpolator(floatingInterpolator);
