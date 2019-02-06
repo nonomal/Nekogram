@@ -1115,6 +1115,7 @@ public class LaunchActivity extends Activity implements ActionBarLayout.ActionBa
                             Integer messageId = null;
                             boolean hasUrl = false;
                             String scheme = data.getScheme();
+                            boolean internal = intent.getExtras().get("internal") != null && (boolean) intent.getExtras().get("internal");
                             if (scheme != null) {
                                 if ((scheme.equals("http") || scheme.equals("https"))) {
                                     String host = data.getHost().toLowerCase();
@@ -1336,7 +1337,7 @@ public class LaunchActivity extends Activity implements ActionBarLayout.ActionBa
                                     if (message != null && message.startsWith("@")) {
                                         message = " " + message;
                                     }
-                                    runLinkRequest(intentAccount[0], username, group, sticker, botUser, botChat, message, hasUrl, messageId, game, instantView, auth, lang, unsupportedUrl, code, wallpaper, wallpaperModes, 0);
+                                    runLinkRequest(intentAccount[0], username, group, sticker, botUser, botChat, message, hasUrl, messageId, game, instantView, auth, lang, unsupportedUrl, code, wallpaper, wallpaperModes, internal ? 3 : 0);
                                 } else {
                                     try (Cursor cursor = getContentResolver().query(intent.getData(), null, null, null, null)) {
                                         if (cursor != null) {
@@ -1585,12 +1586,12 @@ public class LaunchActivity extends Activity implements ActionBarLayout.ActionBa
                                 final String wallpaper,
                                 final int wallpaperModes,
                                 final int state) {
-        if (state == 0 && UserConfig.getActivatedAccountsCount() >= 2 && auth != null) {
+        if (state == 0 && UserConfig.getActivatedAccountsCount() >= 2) {
             AlertsCreator.createAccountSelectDialog(this, account -> {
                 if (account != intentAccount) {
                     switchToAccount(account, true);
                 }
-                runLinkRequest(account, username, group, sticker, botUser, botChat, message, hasUrl, messageId, game, instantView, auth, lang, unsupportedUrl, code, wallpaper, wallpaperModes, 1);
+                runLinkRequest(account, username, group, sticker, botUser, botChat, message, hasUrl, messageId, game, instantView, auth, lang, unsupportedUrl, code, wallpaper, wallpaperModes, 2);
             }).show();
             return;
         } else if (code != null) {
@@ -1747,7 +1748,7 @@ public class LaunchActivity extends Activity implements ActionBarLayout.ActionBa
                 }
             }));
         } else if (group != null) {
-            if (state == 0) {
+            if (state == 0 || state == 3) {
                 final TLRPC.TL_messages_checkChatInvite req = new TLRPC.TL_messages_checkChatInvite();
                 req.hash = group;
                 requestId[0] = ConnectionsManager.getInstance(intentAccount).sendRequest(req, (response, error) -> AndroidUtilities.runOnUIThread(() -> {

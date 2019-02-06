@@ -75,7 +75,7 @@ public class MessageHelper {
                             if (response != null) {
                                 TLRPC.messages_Messages res = (TLRPC.messages_Messages) response;
                                 messagesSearchCount[0] = res.count;
-                                FileLog.d("NekoRunner: Total " + String.valueOf(messagesSearchCount[0]));
+                                FileLog.d("total " + String.valueOf(messagesSearchCount[0]));
                                 deleteUserChannelHistoryWithSearch(dialog_id, user, true);
                             }
                         }
@@ -128,8 +128,8 @@ public class MessageHelper {
                                     }
                                     MessagesController.getInstance(currentAccount).deleteMessages(ids, random_ids, null, channelId, true);
                                     messagesSearchCount[0] = messagesSearchCount[0] - messagesSearchCount[1];
-                                    FileLog.d("NekoRunner: Found " + String.valueOf(messagesSearchCount[1]));
-                                    FileLog.d("NekoRunner: After " + String.valueOf(messagesSearchCount[0]));
+                                    FileLog.d("found " + String.valueOf(messagesSearchCount[1]));
+                                    FileLog.d("after " + String.valueOf(messagesSearchCount[0]));
                                     if (messagesSearchCount[0] > 0) {
                                         try {
                                             Thread.sleep(1000);

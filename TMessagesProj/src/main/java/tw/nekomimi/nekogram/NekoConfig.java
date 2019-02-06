@@ -171,7 +171,7 @@ public class NekoConfig {
             InputStream httpConnectionStream = null;
 
             try {
-                URL downloadUrl = new URL("https://raw.githubusercontent.com/NekoInverter/NekoProxy/master/proxylist.json");
+                URL downloadUrl = new URL("https://nekomimi.tw/NekoProxy/proxylist.php");
                 URLConnection httpConnection = downloadUrl.openConnection();
                 httpConnection.addRequestProperty("User-Agent", "Mozilla/5.0 (iPhone; CPU iPhone OS 10_0 like Mac OS X) AppleWebKit/602.1.38 (KHTML, like Gecko) Version/10.0 Mobile/14A5297c Safari/602.1");
                 httpConnection.setConnectTimeout(5000);
@@ -193,47 +193,34 @@ public class NekoConfig {
                     }
                 }
 
-                JSONObject jsonObject = new JSONObject(new String(outbuf.toByteArray(), "UTF-8"));
-                JSONArray array = jsonObject.getJSONArray("proxies");
+                JSONArray array = new JSONArray(new String(outbuf.toByteArray(), "UTF-8"));
                 int len = array.length();
                 ArrayList<ProxyInfo> arrayList = new ArrayList<>(len);
                 for (int a = 0; a < len; a++) {
                     String proxyAddr = array.getJSONObject(a).getString("server");
                     int proxyPort = array.getJSONObject(a).getInt("port");
+                    String proxyUser = array.getJSONObject(a).getString("user");
+                    String proxyPass = array.getJSONObject(a).getString("pass");
+                    String proxySecret = array.getJSONObject(a).getString("secret");
                     String proxyName = array.getJSONObject(a).getString("name");
-                    String proxyProvider = array.getJSONObject(a).getString("provider");
                     String proxyHash = array.getJSONObject(a).getString("hash");
-                    String proxyType = array.getJSONObject(a).getString("type");
-                    String proxySecret = null;
-                    String proxyUser = null;
-                    String proxyPass = null;
-                    if (proxyType.equals("MTProxy")) {
-                        proxySecret = array.getJSONObject(a).getString("secret");
-                        if (proxySecret.equals("butterflyday")) {
-                            Calendar calendar = Calendar.getInstance();
-                            Date date = calendar.getTime();
-                            String secret = new SimpleDateFormat("yyyyMMdd", Locale.ENGLISH).format(date.getTime());
-                            MessageDigest md5 = null;
-                            try {
-                                md5 = MessageDigest.getInstance("MD5");
-                                byte[] bytes = md5.digest(secret.getBytes());
-                                StringBuilder result = new StringBuilder();
-                                for (byte b : bytes) {
-                                    String temp = Integer.toHexString(b & 0xff);
-                                    if (temp.length() == 1) {
-                                        temp = "0" + temp;
-                                    }
-                                    result.append(temp);
-                                }
-                                secret = result.toString();
-                            } catch (NoSuchAlgorithmException e) {
-                                e.printStackTrace();
+                    String proxyProvider = array.getJSONObject(a).getString("provider");
+                    if (proxySecret.equals("butterflyday")) {
+                        Calendar calendar = Calendar.getInstance();
+                        Date date = calendar.getTime();
+                        String secret = new SimpleDateFormat("yyyyMMdd", Locale.ENGLISH).format(date.getTime());
+                        MessageDigest md5;
+                        md5 = MessageDigest.getInstance("MD5");
+                        byte[] bytes = md5.digest(secret.getBytes());
+                        StringBuilder result = new StringBuilder();
+                        for (byte b : bytes) {
+                            String temp = Integer.toHexString(b & 0xff);
+                            if (temp.length() == 1) {
+                                temp = "0" + temp;
                             }
-                            proxySecret = secret;
+                            result.append(temp);
                         }
-                    } else if (proxyType.equals("SOCKS5")) {
-                        proxyUser = array.getJSONObject(a).getString("user");
-                        proxyPass = array.getJSONObject(a).getString("pass");
+                        proxySecret = result.toString();
                     }
                     arrayList.add(new ProxyInfo(proxyAddr, proxyPort, proxyUser, proxyPass, proxySecret, proxyName, proxyHash, proxyProvider));
                 }

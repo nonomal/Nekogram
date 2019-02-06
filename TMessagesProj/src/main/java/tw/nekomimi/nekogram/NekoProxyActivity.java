@@ -59,6 +59,8 @@ public class NekoProxyActivity extends BaseFragment implements NotificationCente
     private int proxyEndRow;
     private int proxyDetailRow;
 
+    private AlertDialog progressDialog = null;
+
     public class TextDetailProxyCell extends FrameLayout {
 
         private TextView textView;
@@ -324,6 +326,9 @@ public class NekoProxyActivity extends BaseFragment implements NotificationCente
                 }
                 ConnectionsManager.setProxySettings(useProxySettings, NekoConfig.currentProxy.address, NekoConfig.currentProxy.port, NekoConfig.currentProxy.username, NekoConfig.currentProxy.password, NekoConfig.currentProxy.secret);
             } else if (position == proxyUpdateRow) {
+                progressDialog = new AlertDialog(getParentActivity(), 3);
+                progressDialog.setCanCacnel(false);
+                showDialog(progressDialog);
                 NekoConfig.updateProxyList();
             }
         });
@@ -375,11 +380,6 @@ public class NekoProxyActivity extends BaseFragment implements NotificationCente
     }
 
     @Override
-    protected void onDialogDismiss(Dialog dialog) {
-        DownloadController.getInstance(currentAccount).checkAutodownloadSettings();
-    }
-
-    @Override
     public void onResume() {
         super.onResume();
         if (listAdapter != null) {
@@ -390,6 +390,10 @@ public class NekoProxyActivity extends BaseFragment implements NotificationCente
     @Override
     public void didReceivedNotification(int id, int account, Object... args) {
         if (id == NotificationCenter.proxySettingsChanged) {
+            if (progressDialog != null) {
+                progressDialog.dismiss();
+                progressDialog = null;
+            }
             updateRows(true);
         } else if (id == NotificationCenter.didUpdateConnectionState) {
             int state = ConnectionsManager.getInstance(account).getConnectionState();
@@ -437,18 +441,12 @@ public class NekoProxyActivity extends BaseFragment implements NotificationCente
         @Override
         public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
             switch (holder.getItemViewType()) {
-                case 0: {
-                    break;
-                }
                 case 1: {
                     TextSettingsCell textCell = (TextSettingsCell) holder.itemView;
                     if (position == proxyUpdateRow) {
                         textCell.setTextColor(Theme.getColor(Theme.key_windowBackgroundWhiteBlueText));
                         textCell.setText(LocaleController.getString("NekoProxyUpdate", R.string.NekoProxyUpdate), false);
                     }
-                    break;
-                }
-                case 2: {
                     break;
                 }
                 case 3: {
@@ -458,27 +456,12 @@ public class NekoProxyActivity extends BaseFragment implements NotificationCente
                     }
                     break;
                 }
-                case 4: {
-                    break;
-                }
                 case 5: {
                     TextDetailProxyCell cell = (TextDetailProxyCell) holder.itemView;
                     NekoConfig.ProxyInfo info = NekoConfig.proxyList.get(position - proxyStartRow);
                     cell.setProxy(info, !(position - proxyStartRow == NekoConfig.proxyList.size() - 1));
                     cell.setChecked(NekoConfig.currentProxy == info);
                     break;
-                }
-            }
-        }
-
-        @Override
-        public void onViewAttachedToWindow(RecyclerView.ViewHolder holder) {
-            int viewType = holder.getItemViewType();
-            if (viewType == 3) {
-                TextCheckCell checkCell = (TextCheckCell) holder.itemView;
-                int position = holder.getAdapterPosition();
-                if (position == useProxyRow) {
-                    checkCell.setChecked(useProxySettings);
                 }
             }
         }

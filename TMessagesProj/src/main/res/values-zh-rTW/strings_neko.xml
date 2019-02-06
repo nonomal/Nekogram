@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="NekoSettings">Neko 設定</string>
+    <string name="IPv6">嘗試透過 IPv6 連線</string>
+    <string name="HidePhone">隱藏手機號碼</string>
+    <string name="Hide">隱藏</string>
+    <string name="DeleteAllFromSelf">刪除所有您傳送的訊息</string>
+    <string name="BotLogin">機器人登入</string>
+    <string name="InvalidAccessToken">無效的 Token</string>
+    <string name="IgnoreBlocked">忽略被封鎖的使用者在群組內的發言</string>
+    <string name="Connection">連線</string>
+    <string name="NameOrder">姓名順序</string>
+    <string name="FirstLast">名字 姓氏</string>
+    <string name="LastFirst">姓氏 名字</string>
+    <string name="NekoProxy">Neko 代理</string>
+    <string name="NekoProxyLearnMore">輕觸以了解詳情</string>
+    <string name="NekoProxyUpdate">更新代理伺服器列表</string>
+    <string name="NekoProxyProvidedBy">代理伺服器由 **%1$s** 提供</string>
+    <string name="NoQuoteForward">無引用轉發</string>
+    <string name="Repeat">復讀</string>
+    <string name="UseNekoProxy">使用 Neko 代理</string>
+    <string name="All">所有</string>
+    <string name="TabsSettings">分頁</string>
+    <string name="TabsToBottom">置於底部</string>
+    <string name="HideTabs">隱藏分頁</string>
+    <string name="TabsHideAll">隱藏「全部」</string>
+    <string name="TabsHideUsers">隱藏「使用者」</string>
+    <string name="TabsHideGroups">隱藏「群組」</string>
+    <string name="TabsHideChannels">隱藏「頻道」</string>
+    <string name="TabsHideBots">隱藏「機器人」</string>
+    <string name="TabsHideAdmins">隱藏「管理的群組頻道」</string>
+    <string name="TabsHideCountersRow">隱藏未讀計數</string>
+    <string name="TabsHeight">高度</string>
+    <string name="TabsDisableScrolling">停用滑動</string>
+    <string name="TabsDisableInfiniteScrolling">停用無限滑動</string>
+</resources>

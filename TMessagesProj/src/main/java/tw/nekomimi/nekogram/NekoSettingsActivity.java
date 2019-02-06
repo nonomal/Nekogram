@@ -440,9 +440,6 @@ public class NekoSettingsActivity extends BaseFragment {
                     }
                     break;
                 }
-                case 6: {
-                    break;
-                }
             }
         }
 
