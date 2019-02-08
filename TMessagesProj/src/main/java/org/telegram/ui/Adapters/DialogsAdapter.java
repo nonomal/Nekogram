@@ -42,6 +42,8 @@ import org.telegram.ui.Components.RecyclerListView;
 
 import java.util.ArrayList;
 
+import tw.nekomimi.nekogram.TabsHelper;
+
 public class DialogsAdapter extends RecyclerListView.SelectionAdapter {
 
     private Context mContext;
@@ -62,6 +64,14 @@ public class DialogsAdapter extends RecyclerListView.SelectionAdapter {
         if (onlySelect) {
             selectedDialogs = new ArrayList<>();
         }
+    }
+
+    public int getDialogsType() {
+        return dialogsType;
+    }
+
+    public void setDialogsType(int type) {
+        dialogsType = type;
     }
 
     public void setOpenedDialogId(long id) {
@@ -108,8 +118,10 @@ public class DialogsAdapter extends RecyclerListView.SelectionAdapter {
             return MessagesController.getInstance(currentAccount).dialogsUsersOnly;
         } else if (dialogsType == 5) {
             return MessagesController.getInstance(currentAccount).dialogsChannelsOnly;
+        } else {
+            return TabsHelper.getInstance(currentAccount).getDialogs(dialogsType);
         }
-        return null;
+        //return null;
     }
 
     @Override
@@ -190,6 +202,9 @@ public class DialogsAdapter extends RecyclerListView.SelectionAdapter {
                 break;
             case 1:
                 view = new LoadingCell(mContext);
+                if (UserConfig.getInstance(currentAccount).isBot) {
+                    view = new View(mContext);
+                }
                 break;
             case 2: {
                 HeaderCell headerCell = new HeaderCell(mContext);

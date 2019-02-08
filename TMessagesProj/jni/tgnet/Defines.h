@@ -12,7 +12,7 @@
 #include <functional>
 #include <list>
 #include <limits.h>
-#include <bits/unique_ptr.h>
+#include <memory>
 #include <sstream>
 #include <inttypes.h>
 #include "ByteArray.h"
@@ -29,7 +29,7 @@
 #define DOWNLOAD_CONNECTIONS_COUNT 2
 #define UPLOAD_CONNECTIONS_COUNT 4
 #define CONNECTION_BACKGROUND_KEEP_TIME 10000
-#define MAX_ACCOUNT_COUNT 3
+#define MAX_ACCOUNT_COUNT 8
 
 #define DOWNLOAD_CHUNK_SIZE 1024 * 32
 #define DOWNLOAD_CHUNK_BIG_SIZE 1024 * 128

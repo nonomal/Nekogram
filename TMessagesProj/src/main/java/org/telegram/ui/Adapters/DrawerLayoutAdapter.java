@@ -8,11 +8,14 @@
 
 package org.telegram.ui.Adapters;
 
+import android.app.Activity;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.view.View;
 import android.view.ViewGroup;
 
 import org.telegram.messenger.AndroidUtilities;
+import org.telegram.messenger.ApplicationLoader;
 import org.telegram.messenger.LocaleController;
 import org.telegram.messenger.MessagesController;
 import org.telegram.messenger.R;
@@ -29,6 +32,7 @@ import org.telegram.ui.Components.RecyclerListView;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Locale;
 
 public class DrawerLayoutAdapter extends RecyclerListView.SelectionAdapter {
 
@@ -191,14 +195,18 @@ public class DrawerLayoutAdapter extends RecyclerListView.SelectionAdapter {
 
     private void resetItems() {
         accountNumbers.clear();
+        SharedPreferences preferences = ApplicationLoader.applicationContext.getSharedPreferences("nekoconfig", Activity.MODE_PRIVATE);
+        SharedPreferences.Editor editor = preferences.edit();
         for (int a = 0; a < UserConfig.MAX_ACCOUNT_COUNT; a++) {
             if (UserConfig.getInstance(a).isClientActivated()) {
                 accountNumbers.add(a);
-            }
+            } else {
+            editor.remove(String.format(Locale.US, "account_pos_%d", a));
+        }
         }
         Collections.sort(accountNumbers, (o1, o2) -> {
-            long l1 = UserConfig.getInstance(o1).loginTime;
-            long l2 = UserConfig.getInstance(o2).loginTime;
+            long l1 = preferences.getLong(String.format(Locale.US, "account_pos_%d", o1), UserConfig.getInstance(o1).loginTime);
+            long l2 = preferences.getLong(String.format(Locale.US, "account_pos_%d", o2), UserConfig.getInstance(o2).loginTime);
             if (l1 > l2) {
                 return 1;
             } else if (l1 < l2) {
@@ -222,7 +230,7 @@ public class DrawerLayoutAdapter extends RecyclerListView.SelectionAdapter {
             items.add(new Item(10, LocaleController.getString("Calls", R.string.Calls), R.drawable.menu_calls_ny));
             items.add(new Item(7, LocaleController.getString("InviteFriends", R.string.InviteFriends), R.drawable.menu_invite_ny));
             items.add(new Item(8, LocaleController.getString("Settings", R.string.Settings), R.drawable.menu_settings_ny));
-            items.add(new Item(9, LocaleController.getString("TelegramFAQ", R.string.TelegramFAQ), R.drawable.menu_help_ny));
+            //items.add(new Item(9, LocaleController.getString("TelegramFAQ", R.string.TelegramFAQ), R.drawable.menu_help_ny));
         } else {
             items.add(new Item(2, LocaleController.getString("NewGroup", R.string.NewGroup), R.drawable.menu_newgroup));
             items.add(new Item(3, LocaleController.getString("NewSecretChat", R.string.NewSecretChat), R.drawable.menu_secret));
@@ -233,7 +241,7 @@ public class DrawerLayoutAdapter extends RecyclerListView.SelectionAdapter {
             items.add(new Item(10, LocaleController.getString("Calls", R.string.Calls), R.drawable.menu_calls));
             items.add(new Item(7, LocaleController.getString("InviteFriends", R.string.InviteFriends), R.drawable.menu_invite));
             items.add(new Item(8, LocaleController.getString("Settings", R.string.Settings), R.drawable.menu_settings));
-            items.add(new Item(9, LocaleController.getString("TelegramFAQ", R.string.TelegramFAQ), R.drawable.menu_help));
+            //items.add(new Item(9, LocaleController.getString("TelegramFAQ", R.string.TelegramFAQ), R.drawable.menu_help));
         }
     }
 
@@ -263,5 +271,23 @@ public class DrawerLayoutAdapter extends RecyclerListView.SelectionAdapter {
         public void bind(DrawerActionCell actionCell) {
             actionCell.setTextAndIcon(text, icon);
         }
+    }
+
+    public int getAccountsCount() {
+        return accountNumbers.size();
+    }
+
+    public void swapAccountPosition(int currentAdapterPosition, int targetAdapterPosition) {
+        int currentIndex = currentAdapterPosition - 2;
+        int targetIndex = targetAdapterPosition - 2;
+        int currentElement = accountNumbers.get(currentIndex);
+        int targetElement = accountNumbers.get(targetIndex);
+        accountNumbers.set(targetIndex, currentElement);
+        accountNumbers.set(currentIndex, targetElement);
+        ApplicationLoader.applicationContext.getSharedPreferences("nekoconfig", Activity.MODE_PRIVATE).edit().
+                putLong(String.format(Locale.US, "account_pos_%d", currentElement), targetIndex).
+                putLong(String.format(Locale.US, "account_pos_%d", targetElement), currentIndex)
+                .apply();
+        notifyItemMoved(currentAdapterPosition, targetAdapterPosition);
     }
 }

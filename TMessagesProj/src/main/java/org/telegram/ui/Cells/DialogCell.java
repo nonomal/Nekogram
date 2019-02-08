@@ -41,6 +41,8 @@ import org.telegram.ui.Components.GroupCreateCheckBox;
 
 import java.util.ArrayList;
 
+import tw.nekomimi.nekogram.TabsHelper;
+
 public class DialogCell extends BaseCell {
 
     public static class CustomDialog {
@@ -914,8 +916,10 @@ public class DialogCell extends BaseCell {
             return MessagesController.getInstance(currentAccount).dialogsUsersOnly;
         } else if (dialogsType == 5) {
             return MessagesController.getInstance(currentAccount).dialogsChannelsOnly;
+        } else {
+            return TabsHelper.getInstance(currentAccount).getDialogs(dialogsType);
         }
-        return null;
+        //return null;
     }
 
     public void checkCurrentDialogIndex() {

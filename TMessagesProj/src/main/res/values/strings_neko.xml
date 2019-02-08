@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="NekoSettings">Neko Settings</string>
+    <string name="IPv6">Try connecting through IPv6</string>
+    <string name="HidePhone">Hide phone number</string>
+    <string name="Hide">Hide</string>
+    <string name="DeleteAllFromSelf">Delete all from yourself</string>
+    <string name="BotLogin">Bot Login</string>
+    <string name="InvalidAccessToken">Invalid access token</string>
+    <string name="IgnoreBlocked">Ignore blocked users in group</string>
+    <string name="Connection">Connection</string>
+    <string name="NameOrder">Name order</string>
+    <string name="FirstLast">First Last</string>
+    <string name="LastFirst">Last First</string>
+    <string name="NekoProxy">Neko Proxy</string>
+    <string name="NekoProxyLearnMore">Tap to learn more</string>
+    <string name="NekoProxyUpdate">Update proxy list</string>
+    <string name="NekoProxyProvidedBy">Proxy provided by **%1$s**</string>
+    <string name="NoQuoteForward">NoQuote forward</string>
+    <string name="Repeat">Repeat</string>
+    <string name="UseNekoProxy">Use Neko Proxy</string>
+    <string name="All">All</string>
+    <string name="TabsSettings">Tabs</string>
+    <string name="TabsToBottom">Tabs to bottom</string>
+    <string name="HideTabs">Hide tabs</string>
+    <string name="TabsHideAll">Hide \"All\"</string>
+    <string name="TabsHideUsers">Hide \"Users\"</string>
+    <string name="TabsHideGroups">Hide \"Groups\"</string>
+    <string name="TabsHideChannels">Hide \"Channels\"</string>
+    <string name="TabsHideBots">Hide \"Bots\"</string>
+    <string name="TabsHideAdmins">Hide \"Admins\"</string>
+    <string name="TabsHideCountersRow">Hide counters</string>
+    <string name="TabsHeight">Height</string>
+    <string name="TabsDisableScrolling">Disable scrolling</string>
+    <string name="TabsDisableInfiniteScrolling">Disable infinite scrolling</string>
+</resources>

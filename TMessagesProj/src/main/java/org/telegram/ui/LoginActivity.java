@@ -13,11 +13,13 @@ import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.animation.AnimatorSet;
 import android.animation.ObjectAnimator;
+import android.animation.StateListAnimator;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.Dialog;
 import android.app.PendingIntent;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
@@ -50,6 +52,7 @@ import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.animation.AccelerateDecelerateInterpolator;
 import android.view.inputmethod.EditorInfo;
 import android.widget.AdapterView;
@@ -110,6 +113,8 @@ import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import tw.nekomimi.nekogram.NekoProxyActivity;
+
 @SuppressLint("HardwareIds")
 public class LoginActivity extends BaseFragment {
 
@@ -122,7 +127,7 @@ public class LoginActivity extends BaseFragment {
     private boolean checkPermissions = true;
     private boolean checkShowPermissions = true;
     private boolean newAccount;
-    private boolean syncContacts = true;
+    private boolean syncContacts = false;
 
     private int scrollHeight;
 
@@ -205,11 +210,112 @@ public class LoginActivity extends BaseFragment {
                     if (onBackPressed()) {
                         finishFragment();
                     }
+                } else if (id == 2) {
+                    AlertDialog.Builder builder = new AlertDialog.Builder(context);
+                    builder.setTitle(LocaleController.getString("BotLogin", R.string.BotLogin));
+
+                    final EditTextBoldCursor editText = new EditTextBoldCursor(context) {
+                        @Override
+                        protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+                            super.onMeasure(widthMeasureSpec, MeasureSpec.makeMeasureSpec(AndroidUtilities.dp(64), MeasureSpec.EXACTLY));
+                        }
+                    };
+                    editText.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 18);
+                    editText.setTextColor(Theme.getColor(Theme.key_dialogTextBlack));
+                    editText.setHintText("Token");
+                    editText.setHeaderHintColor(Theme.getColor(Theme.key_windowBackgroundWhiteBlueHeader));
+                    editText.setSingleLine(true);
+                    editText.setFocusable(true);
+                    editText.setTransformHintToHeader(true);
+                    editText.setLineColors(Theme.getColor(Theme.key_windowBackgroundWhiteInputField), Theme.getColor(Theme.key_windowBackgroundWhiteInputFieldActivated), Theme.getColor(Theme.key_windowBackgroundWhiteRedText3));
+                    editText.setImeOptions(EditorInfo.IME_ACTION_DONE);
+                    editText.setBackgroundDrawable(null);
+                    editText.requestFocus();
+                    editText.setPadding(0, 0, 0, 0);
+                    builder.setView(editText);
+
+
+                    builder.setPositiveButton(LocaleController.getString("OK", R.string.OK), new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialogInterface, int i) {
+                            if (getParentActivity() == null) {
+                                return;
+                            }
+                            String token = editText.getText().toString();
+
+                            if (token.length() == 0) {
+                                needShowAlert(LocaleController.getString("AppName", R.string.AppName), LocaleController.getString("InvalidAccessToken", R.string.InvalidAccessToken));
+                                return;
+                            }
+
+                            ConnectionsManager.getInstance(currentAccount).cleanup(false);
+                            final TLRPC.TL_auth_importBotAuthorization  req = new TLRPC.TL_auth_importBotAuthorization ();
+
+                            req.api_hash = BuildVars.APP_HASH;
+                            req.api_id = BuildVars.APP_ID;
+                            req.bot_auth_token = token;
+                            req.flags = 0;
+                            int reqId = ConnectionsManager.getInstance(currentAccount).sendRequest(req, (response, error) -> AndroidUtilities.runOnUIThread(() -> {
+                                if (error == null) {
+                                    TLRPC.TL_auth_authorization res = (TLRPC.TL_auth_authorization) response;
+                                    ConnectionsManager.getInstance(currentAccount).setUserId(res.user.id);
+                                    UserConfig.getInstance(currentAccount).clearConfig();
+                                    MessagesController.getInstance(currentAccount).cleanup();
+                                    UserConfig.getInstance(currentAccount).isBot = true;
+                                    UserConfig.getInstance(currentAccount).syncContacts = syncContacts;
+                                    UserConfig.getInstance(currentAccount).setCurrentUser(res.user);
+                                    UserConfig.getInstance(currentAccount).saveConfig(true);
+                                    MessagesStorage.getInstance(currentAccount).cleanup(true);
+                                    ArrayList<TLRPC.User> users = new ArrayList<>();
+                                    users.add(res.user);
+                                    MessagesStorage.getInstance(currentAccount).putUsersAndChats(users, null, true, true);
+                                    MessagesController.getInstance(currentAccount).putUser(res.user, false);
+                                    ContactsController.getInstance(currentAccount).checkAppAccount();
+                                    MessagesController.getInstance(currentAccount).getBlockedUsers(true);
+                                    MessagesController.getInstance(currentAccount).checkProxyInfo(true);
+                                    ConnectionsManager.getInstance(currentAccount).updateDcSettings();
+                                    needFinishActivity();
+                                } else {
+                                    if (error.text != null) {
+                                        if (error.text.contains("ACCESS_TOKEN_INVALID")) {
+                                            needShowAlert(LocaleController.getString("AppName", R.string.AppName), LocaleController.getString("InvalidAccessToken", R.string.InvalidAccessToken));
+                                        } else if (error.text.startsWith("FLOOD_WAIT")) {
+                                            needShowAlert(LocaleController.getString("AppName", R.string.AppName), LocaleController.getString("FloodWait", R.string.FloodWait));
+                                        } else if (error.code != -1000) {
+                                            needShowAlert(LocaleController.getString("AppName", R.string.AppName), error.text);
+                                        }
+                                    }
+                                }
+                                needHideProgress(false);
+                            }), ConnectionsManager.RequestFlagFailOnServerErrors | ConnectionsManager.RequestFlagWithoutLogin | ConnectionsManager.RequestFlagTryDifferentDc | ConnectionsManager.RequestFlagEnableUnauthorized);
+                            needShowProgress(reqId);
+                        }
+                    });
+                    builder.setNegativeButton(LocaleController.getString("Cancel", R.string.Cancel), null);
+                    builder.show().setOnShowListener(new DialogInterface.OnShowListener() {
+                        @Override
+                        public void onShow(DialogInterface dialog) {
+                            editText.requestFocus();
+                            AndroidUtilities.showKeyboard(editText);
+                        }
+                    });
+                    if (editText != null) {
+                        ViewGroup.MarginLayoutParams layoutParams = (ViewGroup.MarginLayoutParams) editText.getLayoutParams();
+                        if (layoutParams != null) {
+                            if (layoutParams instanceof FrameLayout.LayoutParams) {
+                                ((FrameLayout.LayoutParams) layoutParams).gravity = Gravity.CENTER_HORIZONTAL;
+                            }
+                            layoutParams.rightMargin = layoutParams.leftMargin = AndroidUtilities.dp(24);
+                            layoutParams.height = AndroidUtilities.dp(36);
+                            editText.setLayoutParams(layoutParams);
+                        }
+                    }
                 }
             }
         });
 
         ActionBarMenu menu = actionBar.createMenu();
+        menu.addItem(2, R.drawable.list_bot);
         actionBar.setAllowOverlayTitle(true);
         doneItem = menu.addItemWithWidth(done_button, R.drawable.ic_done, AndroidUtilities.dp(56));
         doneProgressView = new ContextProgressView(context, 1);
@@ -727,6 +833,7 @@ public class LoginActivity extends BaseFragment {
         private TextView textView;
         private TextView textView2;
         private CheckBoxCell checkBoxCell;
+        private TextView nekoProxyText;
 
         private int countryState = 0;
 
@@ -1004,39 +1111,54 @@ public class LoginActivity extends BaseFragment {
             textView2.setLineSpacing(AndroidUtilities.dp(2), 1.0f);
             addView(textView2, LayoutHelper.createLinear(LayoutHelper.WRAP_CONTENT, LayoutHelper.WRAP_CONTENT, LocaleController.isRTL ? Gravity.RIGHT : Gravity.LEFT, 0, 28, 0, 10));
 
-            if (newAccount) {
-                checkBoxCell = new CheckBoxCell(context, 2);
-                checkBoxCell.setText(LocaleController.getString("SyncContacts", R.string.SyncContacts), "", syncContacts, false);
-                addView(checkBoxCell, LayoutHelper.createLinear(LayoutHelper.WRAP_CONTENT, LayoutHelper.MATCH_PARENT, Gravity.LEFT | Gravity.TOP, 0, 0, 0, 0));
-                checkBoxCell.setOnClickListener(new OnClickListener() {
+            checkBoxCell = new CheckBoxCell(context, 2);
+            checkBoxCell.setText(LocaleController.getString("SyncContacts", R.string.SyncContacts), "", syncContacts, false);
+            addView(checkBoxCell, LayoutHelper.createLinear(LayoutHelper.WRAP_CONTENT, LayoutHelper.MATCH_PARENT, Gravity.LEFT | Gravity.TOP, 0, 0, 0, 0));
+            checkBoxCell.setOnClickListener(new OnClickListener() {
 
-                    private Toast visibleToast;
+                private Toast visibleToast;
 
-                    @Override
-                    public void onClick(View v) {
-                        if (getParentActivity() == null) {
-                            return;
-                        }
-                        CheckBoxCell cell = (CheckBoxCell) v;
-                        syncContacts = !syncContacts;
-                        cell.setChecked(syncContacts, true);
-                        try {
-                            if (visibleToast != null) {
-                                visibleToast.cancel();
-                            }
-                        } catch (Exception e) {
-                            FileLog.e(e);
-                        }
-                        if (syncContacts) {
-                            visibleToast = Toast.makeText(getParentActivity(), LocaleController.getString("SyncContactsOn", R.string.SyncContactsOn), Toast.LENGTH_SHORT);
-                            visibleToast.show();
-                        } else {
-                            visibleToast = Toast.makeText(getParentActivity(), LocaleController.getString("SyncContactsOff", R.string.SyncContactsOff), Toast.LENGTH_SHORT);
-                            visibleToast.show();
-                        }
+                @Override
+                public void onClick(View v) {
+                    if (getParentActivity() == null) {
+                        return;
                     }
-                });
+                    CheckBoxCell cell = (CheckBoxCell) v;
+                    syncContacts = !syncContacts;
+                    cell.setChecked(syncContacts, true);
+                    try {
+                        if (visibleToast != null) {
+                            visibleToast.cancel();
+                        }
+                    } catch (Exception e) {
+                        FileLog.e(e);
+                    }
+                    if (syncContacts) {
+                        visibleToast = Toast.makeText(getParentActivity(), LocaleController.getString("SyncContactsOn", R.string.SyncContactsOn), Toast.LENGTH_SHORT);
+                        visibleToast.show();
+                    } else {
+                        visibleToast = Toast.makeText(getParentActivity(), LocaleController.getString("SyncContactsOff", R.string.SyncContactsOff), Toast.LENGTH_SHORT);
+                        visibleToast.show();
+                    }
+                }
+            });
+            TextView nekoProxyText = new TextView(context);
+            nekoProxyText.setText(LocaleController.getString("UseNekoProxy", R.string.UseNekoProxy));
+            nekoProxyText.setGravity(LocaleController.isRTL ? Gravity.RIGHT : Gravity.LEFT);
+            nekoProxyText.setTextColor(0xffffffff);
+            nekoProxyText.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 16);
+            nekoProxyText.setBackgroundResource(R.drawable.regbtn_states);
+            if (Build.VERSION.SDK_INT >= 21) {
+                StateListAnimator animator = new StateListAnimator();
+                animator.addState(new int[]{android.R.attr.state_pressed}, ObjectAnimator.ofFloat(nekoProxyText, "translationZ", AndroidUtilities.dp(2), AndroidUtilities.dp(4)).setDuration(200));
+                animator.addState(new int[]{}, ObjectAnimator.ofFloat(nekoProxyText, "translationZ", AndroidUtilities.dp(4), AndroidUtilities.dp(2)).setDuration(200));
+                nekoProxyText.setStateListAnimator(animator);
             }
+            nekoProxyText.setPadding(AndroidUtilities.dp(20), AndroidUtilities.dp(10), AndroidUtilities.dp(20), AndroidUtilities.dp(10));
+            addView(nekoProxyText, LayoutHelper.createLinear(LayoutHelper.WRAP_CONTENT, LayoutHelper.WRAP_CONTENT, LocaleController.isRTL ? Gravity.RIGHT : Gravity.LEFT, 0, 0, 0, 0));
+            nekoProxyText.setOnClickListener(v -> {
+                presentFragment(new NekoProxyActivity());
+            });
 
             HashMap<String, String> languageMap = new HashMap<>();
             try {
@@ -1195,6 +1317,9 @@ public class LoginActivity extends BaseFragment {
                 for (int a = 0; a < UserConfig.MAX_ACCOUNT_COUNT; a++) {
                     UserConfig userConfig = UserConfig.getInstance(a);
                     if (!userConfig.isClientActivated()) {
+                        continue;
+                    }
+                    if(userConfig.isBot){
                         continue;
                     }
                     String userPhone = userConfig.getCurrentUser().phone;

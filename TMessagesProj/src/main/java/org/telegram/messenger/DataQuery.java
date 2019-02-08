@@ -66,7 +66,7 @@ import java.util.Map;
 public class DataQuery {
 
     private int currentAccount;
-    private static volatile DataQuery[] Instance = new DataQuery[3];
+    private static volatile DataQuery[] Instance = new DataQuery[UserConfig.MAX_ACCOUNT_COUNT];
     public static DataQuery getInstance(int num) {
         DataQuery localInstance = Instance[num];
         if (localInstance == null) {
@@ -888,7 +888,7 @@ public class DataQuery {
                 }
                 processLoadedFeaturedStickers(newStickerArray, unread, true, date, hash);
             });
-        } else {
+        } else if(!UserConfig.getInstance(currentAccount).isBot) {
             final TLRPC.TL_messages_getFeaturedStickers req = new TLRPC.TL_messages_getFeaturedStickers();
             req.hash = force ? 0 : loadFeaturedHash;
             ConnectionsManager.getInstance(currentAccount).sendRequest(req, (response, error) -> AndroidUtilities.runOnUIThread(() -> {
@@ -1077,7 +1077,7 @@ public class DataQuery {
                 archivedStickersCount[type] = count;
                 NotificationCenter.getInstance(currentAccount).postNotificationName(NotificationCenter.archivedStickersCountDidLoad, type);
             }
-        } else {
+        } else if(!UserConfig.getInstance(currentAccount).isBot) {
             TLRPC.TL_messages_getArchivedStickers req = new TLRPC.TL_messages_getArchivedStickers();
             req.limit = 0;
             req.masks = type == TYPE_MASK;
@@ -1184,7 +1184,7 @@ public class DataQuery {
                 }
                 processLoadedStickers(type, newStickerArray, true, date, hash);
             });
-        } else {
+        } else if(!UserConfig.getInstance(currentAccount).isBot) {
             if (type == TYPE_FEATURED) {
                 TLRPC.TL_messages_allStickers response = new TLRPC.TL_messages_allStickers();
                 response.hash = loadFeaturedHash;

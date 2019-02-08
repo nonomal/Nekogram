@@ -10,9 +10,6 @@ import android.os.SystemClock;
 import android.text.TextUtils;
 import android.util.Base64;
 
-import com.google.firebase.remoteconfig.FirebaseRemoteConfig;
-import com.google.firebase.remoteconfig.FirebaseRemoteConfigSettings;
-
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.telegram.messenger.AndroidUtilities;
@@ -45,6 +42,8 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
+
+import tw.nekomimi.nekogram.NekoConfig;
 
 public class ConnectionsManager {
 
@@ -293,7 +292,7 @@ public class ConnectionsManager {
     }
 
     public void init(int version, int layer, int apiId, String deviceModel, String systemVersion, String appVersion, String langCode, String systemLangCode, String configPath, String logPath, int userId, boolean enablePushConnection) {
-        SharedPreferences preferences = ApplicationLoader.applicationContext.getSharedPreferences("mainconfig", Activity.MODE_PRIVATE);
+        SharedPreferences preferences = ApplicationLoader.applicationContext.getSharedPreferences("nekoconfig", Activity.MODE_PRIVATE);
         String proxyAddress = preferences.getString("proxy_ip", "");
         String proxyUsername = preferences.getString("proxy_user", "");
         String proxyPassword = preferences.getString("proxy_pass", "");
@@ -302,6 +301,17 @@ public class ConnectionsManager {
         if (preferences.getBoolean("proxy_enabled", false) && !TextUtils.isEmpty(proxyAddress)) {
             native_setProxySettings(currentAccount, proxyAddress, proxyPort, proxyUsername, proxyPassword, proxySecret);
         }
+
+        preferences = ApplicationLoader.applicationContext.getSharedPreferences("mainconfig", Activity.MODE_PRIVATE);
+        proxyAddress = preferences.getString("proxy_ip", "");
+        proxyUsername = preferences.getString("proxy_user", "");
+        proxyPassword = preferences.getString("proxy_pass", "");
+        proxySecret = preferences.getString("proxy_secret", "");
+        proxyPort = preferences.getInt("proxy_port", 1080);
+        if (preferences.getBoolean("proxy_enabled", false) && !TextUtils.isEmpty(proxyAddress)) {
+            native_setProxySettings(currentAccount, proxyAddress, proxyPort, proxyUsername, proxyPassword, proxySecret);
+        }
+
 
         native_init(currentAccount, version, layer, apiId, deviceModel, systemVersion, appVersion, langCode, systemLangCode, configPath, logPath, userId, enablePushConnection, ApplicationLoader.isNetworkOnline(), ApplicationLoader.getCurrentNetworkType());
         checkConnection();
@@ -657,6 +667,9 @@ public class ConnectionsManager {
         if (Build.VERSION.SDK_INT < 19) {
             return false;
         }
+        if(!NekoConfig.useIPv6){
+            return false;
+        }
         if (BuildVars.LOGS_ENABLED) {
             try {
                 NetworkInterface networkInterface;
@@ -691,7 +704,6 @@ public class ConnectionsManager {
         try {
             NetworkInterface networkInterface;
             Enumeration<NetworkInterface> networkInterfaces = NetworkInterface.getNetworkInterfaces();
-            boolean hasIpv4 = false;
             boolean hasIpv6 = false;
             while (networkInterfaces.hasMoreElements()) {
                 networkInterface = networkInterfaces.nextElement();
@@ -707,15 +719,10 @@ public class ConnectionsManager {
                     }
                     if (inetAddress instanceof Inet6Address) {
                         hasIpv6 = true;
-                    } else if (inetAddress instanceof Inet4Address) {
-                        String addrr = inetAddress.getHostAddress();
-                        if (!addrr.startsWith("192.0.0.")) {
-                            hasIpv4 = true;
-                        }
                     }
                 }
             }
-            if (!hasIpv4 && hasIpv6) {
+            if (hasIpv6) {
                 return true;
             }
         } catch (Throwable e) {
@@ -855,7 +862,6 @@ public class ConnectionsManager {
     private static class FirebaseTask extends AsyncTask<Void, Void, NativeByteBuffer> {
 
         private int currentAccount;
-        private FirebaseRemoteConfig firebaseRemoteConfig;
 
         public FirebaseTask(int instance) {
             super();
@@ -863,59 +869,15 @@ public class ConnectionsManager {
         }
 
         protected NativeByteBuffer doInBackground(Void... voids) {
-            try {
-                if (native_isTestBackend(currentAccount) != 0) {
-                    throw new Exception("test backend");
-                }
-                firebaseRemoteConfig = FirebaseRemoteConfig.getInstance();
-                FirebaseRemoteConfigSettings configSettings = new FirebaseRemoteConfigSettings.Builder().setDeveloperModeEnabled(BuildConfig.DEBUG).build();
-                firebaseRemoteConfig.setConfigSettings(configSettings);
-                String currentValue = firebaseRemoteConfig.getString("ipconfigv2");
+            Utilities.stageQueue.postRunnable(() -> {
                 if (BuildVars.LOGS_ENABLED) {
-                    FileLog.d("current firebase value = " + currentValue);
+                    FileLog.d("failed to get firebase result");
+                    FileLog.d("start dns txt task");
                 }
-
-                firebaseRemoteConfig.fetch(0).addOnCompleteListener(finishedTask -> {
-                    final boolean success = finishedTask.isSuccessful();
-                    Utilities.stageQueue.postRunnable(() -> {
-                        currentTask = null;
-                        String config = null;
-                        if (success) {
-                            firebaseRemoteConfig.activateFetched();
-                            config = firebaseRemoteConfig.getString("ipconfigv2");
-                        }
-                        if (!TextUtils.isEmpty(config)) {
-                            byte[] bytes = Base64.decode(config, Base64.DEFAULT);
-                            try {
-                                NativeByteBuffer buffer = new NativeByteBuffer(bytes.length);
-                                buffer.writeBytes(bytes);
-                                native_applyDnsConfig(currentAccount, buffer.address, UserConfig.getInstance(currentAccount).getClientPhone());
-                            } catch (Exception e) {
-                                FileLog.e(e);
-                            }
-                        } else {
-                            if (BuildVars.LOGS_ENABLED) {
-                                FileLog.d("failed to get firebase result");
-                                FileLog.d("start dns txt task");
-                            }
-                            DnsTxtLoadTask task = new DnsTxtLoadTask(currentAccount);
-                            task.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, null, null, null);
-                            currentTask = task;
-                        }
-                    });
-                });
-            } catch (Throwable e) {
-                Utilities.stageQueue.postRunnable(() -> {
-                    if (BuildVars.LOGS_ENABLED) {
-                        FileLog.d("failed to get firebase result");
-                        FileLog.d("start dns txt task");
-                    }
-                    DnsTxtLoadTask task = new DnsTxtLoadTask(currentAccount);
-                    task.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, null, null, null);
-                    currentTask = task;
-                });
-                FileLog.e(e);
-            }
+                DnsTxtLoadTask task = new DnsTxtLoadTask(currentAccount);
+                task.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, null, null, null);
+                currentTask = task;
+            });
             return null;
         }
 

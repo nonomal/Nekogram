@@ -112,6 +112,9 @@ import java.util.Locale;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
+import tw.nekomimi.nekogram.NekoConfig;
+import tw.nekomimi.nekogram.NekoSettingsActivity;
+
 public class SettingsActivity extends BaseFragment implements NotificationCenter.NotificationCenterDelegate, ImageUpdater.ImageUpdaterDelegate {
 
     private RecyclerListView listView;
@@ -150,6 +153,7 @@ public class SettingsActivity extends BaseFragment implements NotificationCenter
     private int privacyRow;
     private int dataRow;
     private int chatRow;
+    private int nekoRow;
     private int helpRow;
     private int versionRow;
     private int rowCount;
@@ -218,7 +222,9 @@ public class SettingsActivity extends BaseFragment implements NotificationCenter
         rowCount = 0;
         overscrollRow = rowCount++;
         numberSectionRow = rowCount++;
-        numberRow = rowCount++;
+        if(!NekoConfig.hidePhone){
+            numberRow = rowCount++;
+        }
         usernameRow = rowCount++;
         bioRow = rowCount++;
         settingsSectionRow = rowCount++;
@@ -227,6 +233,7 @@ public class SettingsActivity extends BaseFragment implements NotificationCenter
         privacyRow = rowCount++;
         dataRow = rowCount++;
         chatRow = rowCount++;
+        nekoRow = rowCount++;
         languageRow = rowCount++;
         helpRow = rowCount++;
         versionRow = rowCount++;
@@ -355,6 +362,8 @@ public class SettingsActivity extends BaseFragment implements NotificationCenter
                 presentFragment(new PrivacySettingsActivity());
             } else if (position == dataRow) {
                 presentFragment(new DataSettingsActivity());
+            } else if (position == nekoRow) {
+                presentFragment(new NekoSettingsActivity());
             } else if (position == chatRow) {
                 presentFragment(new ThemeActivity(ThemeActivity.THEME_TYPE_BASIC));
             } else if (position == helpRow) {
@@ -1202,6 +1211,8 @@ public class SettingsActivity extends BaseFragment implements NotificationCenter
                         textCell.setTextAndIcon(LocaleController.getString("PrivacySettings", R.string.PrivacySettings), R.drawable.menu_secret, true);
                     } else if (position == dataRow) {
                         textCell.setTextAndIcon(LocaleController.getString("DataSettings", R.string.DataSettings), R.drawable.menu_data, true);
+                    } else if (position == nekoRow) {
+                        textCell.setTextAndIcon(LocaleController.getString("NekoSettings", R.string.NekoSettings), R.drawable.menu_settings, true);
                     } else if (position == chatRow) {
                         textCell.setTextAndIcon(LocaleController.getString("ChatSettings", R.string.ChatSettings), R.drawable.menu_chats, true);
                     } else if (position == helpRow) {
@@ -1257,7 +1268,7 @@ public class SettingsActivity extends BaseFragment implements NotificationCenter
             int position = holder.getAdapterPosition();
             return position == notificationRow || position == numberRow || position == privacyRow ||
                     position == languageRow || position == usernameRow || position == bioRow ||
-                    position == versionRow || position == dataRow || position == chatRow ||
+                    position == versionRow || position == dataRow || position == nekoRow || position == chatRow ||
                     position == helpRow;
         }
 
@@ -1312,7 +1323,7 @@ public class SettingsActivity extends BaseFragment implements NotificationCenter
                                 abi = "universal " + Build.CPU_ABI + " " + Build.CPU_ABI2;
                                 break;
                         }
-                        cell.setText(LocaleController.formatString("TelegramVersion", R.string.TelegramVersion, String.format(Locale.US, "v%s (%d) %s", pInfo.versionName, code, abi)));
+                        cell.setText(String.format("Nekogram %1$s", String.format(Locale.US, "v%s (%d) %s", pInfo.versionName, code, abi)));
                     } catch (Exception e) {
                         FileLog.e(e);
                     }
@@ -1335,7 +1346,7 @@ public class SettingsActivity extends BaseFragment implements NotificationCenter
             } else if (position == settingsSectionRow) {
                 return 1;
             } else if (position == notificationRow || position == privacyRow || position == languageRow ||
-                    position == dataRow || position == chatRow || position == helpRow) {
+                    position == dataRow || position == nekoRow || position == chatRow || position == helpRow) {
                 return 2;
             } else if (position == versionRow) {
                 return 5;
