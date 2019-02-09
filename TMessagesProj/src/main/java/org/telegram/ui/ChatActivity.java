@@ -11260,7 +11260,6 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
                                 continue;
                             }
 
-                            boolean allowKick;
                             boolean canEditAdmin;
                             boolean canRestrict;
                             boolean editingAdmin;
@@ -11269,10 +11268,9 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
                             if (ChatObject.isChannel(currentChat)) {
                                 channelParticipant = ((TLRPC.TL_chatChannelParticipant) participant).channelParticipant;
                                 canEditAdmin = ChatObject.canAddAdmins(currentChat);
-                                allowKick = canRestrict = ChatObject.canBlockUsers(currentChat) && (!(channelParticipant instanceof TLRPC.TL_channelParticipantAdmin || channelParticipant instanceof TLRPC.TL_channelParticipantCreator) || channelParticipant.can_edit);
+                                canRestrict = ChatObject.canBlockUsers(currentChat) && (!(channelParticipant instanceof TLRPC.TL_channelParticipantAdmin || channelParticipant instanceof TLRPC.TL_channelParticipantCreator) || channelParticipant.can_edit);
                                 editingAdmin = channelParticipant instanceof TLRPC.TL_channelParticipantAdmin;
                             } else {
-                                allowKick = currentChat.creator || participant instanceof TLRPC.TL_chatParticipant && (ChatObject.canBlockUsers(currentChat) || participant.inviter_id == UserConfig.getInstance(currentAccount).getClientUserId());
                                 canEditAdmin = currentChat.creator;
                                 canRestrict = currentChat.creator;
                                 editingAdmin = participant instanceof TLRPC.TL_chatParticipantAdmin;
@@ -11285,10 +11283,6 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
                             if (canRestrict) {
                                 items.add(LocaleController.getString("ChangePermissions", R.string.ChangePermissions));
                                 options.add(98);
-                            }
-                            if (allowKick) {
-                                items.add(LocaleController.getString("KickFromGroup", R.string.KickFromGroup));
-                                options.add(99);
                             }
                         }
                     }
@@ -11876,9 +11870,6 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
                 break;
             } case 98: {
                 doAdminActions(98);
-                break;
-            } case 99: {
-                doAdminActions(99);
                 break;
             }
         }
@@ -13690,20 +13681,7 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
                 new ThemeDescription(null, 0, null, null, null, attachAlertDelegate, Theme.key_dialogCameraIcon),
         };
     }
-    private void kickUser(int uid) {
-        if (uid != 0) {
-            MessagesController.getInstance(currentAccount).deleteUserFromChat(currentChat.id, MessagesController.getInstance(currentAccount).getUser(uid), chatInfo);
-        } else {
-            NotificationCenter.getInstance(currentAccount).removeObserver(this, NotificationCenter.closeChats);
-            if (AndroidUtilities.isTablet()) {
-                NotificationCenter.getInstance(currentAccount).postNotificationName(NotificationCenter.closeChats, -(long) currentChat.id);
-            } else {
-                NotificationCenter.getInstance(currentAccount).postNotificationName(NotificationCenter.closeChats);
-            }
-            MessagesController.getInstance(currentAccount).deleteUserFromChat(currentChat.id, MessagesController.getInstance(currentAccount).getUser(UserConfig.getInstance(currentAccount).getClientUserId()), chatInfo);
-            finishFragment();
-        }
-    }
+
     private void openRightsEdit(int action, int user_id, TLRPC.ChatParticipant participant, TLRPC.TL_chatAdminRights adminRights, TLRPC.TL_chatBannedRights bannedRights) {
         ChatRightsEditActivity fragment = new ChatRightsEditActivity(user_id, currentChat.id, adminRights, currentChat.default_banned_rights, bannedRights, action, true, false);
         fragment.setDelegate((rights, rightsAdmin, rightsBanned) -> {
@@ -13776,13 +13754,6 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
             case 98 :
                 action = 1;
                 break;
-            case 99 :
-                action = 2;
-                break;
-        }
-        if(action == 2){
-            kickUser(selectedObject.messageOwner.from_id);
-            return;
         }
         for (int a = 0; a < chatInfo.participants.participants.size(); a++) {
             TLRPC.ChatParticipant participant = chatInfo.participants.participants.get(a);

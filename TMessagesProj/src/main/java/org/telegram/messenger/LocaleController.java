@@ -877,6 +877,9 @@ public class LocaleController {
     }
 
     private String getStringInternal(String key, int res) {
+        if(key.equals("AppName") || key.equals("AppNameBeta")) {
+            return "\uD83D\uDE36 Nekogram";
+        }
         String value = BuildVars.USE_CLOUD_STRINGS ? localeValues.get(key) : null;
         if (value == null) {
             try {

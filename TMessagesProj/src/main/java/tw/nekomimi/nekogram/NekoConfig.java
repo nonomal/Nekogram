@@ -12,6 +12,7 @@ import org.json.JSONObject;
 import org.telegram.messenger.ApplicationLoader;
 import org.telegram.messenger.BuildVars;
 import org.telegram.messenger.FileLog;
+import org.telegram.messenger.LocaleController;
 import org.telegram.messenger.NotificationCenter;
 import org.telegram.messenger.Utilities;
 import org.telegram.tgnet.NativeByteBuffer;
@@ -171,7 +172,7 @@ public class NekoConfig {
             InputStream httpConnectionStream = null;
 
             try {
-                URL downloadUrl = new URL("https://nekomimi.tw/NekoProxy/proxylist.php?v=" + BuildVars.BUILD_VERSION);
+                URL downloadUrl = new URL("https://nekomimi.tw/NekoProxy/proxylist.php?v=" + BuildVars.BUILD_VERSION + "&lang=" + LocaleController.getInstance().getCurrentLocaleInfo().getLangCode());
                 URLConnection httpConnection = downloadUrl.openConnection();
                 httpConnection.addRequestProperty("User-Agent", "Mozilla/5.0 (iPhone; CPU iPhone OS 10_0 like Mac OS X) AppleWebKit/602.1.38 (KHTML, like Gecko) Version/10.0 Mobile/14A5297c Safari/602.1");
                 httpConnection.setConnectTimeout(5000);

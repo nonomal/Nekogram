@@ -266,15 +266,15 @@ public class TabsView extends FrameLayout implements NotificationCenter.Notifica
                     indexToPosition[TabIndex.Bots.value]);
 
         if (!TabsConfig.hideChannels)
-            unreadCount(MessagesController.getInstance(UserConfig.selectedAccount).dialogsChannelsOnly,
+            unreadCount(TabsHelper.getInstance(UserConfig.selectedAccount).dialogsChannels,
                     indexToPosition[TabIndex.Channels.value]);
 
         if (!TabsConfig.hideGroups)
-            unreadCount(MessagesController.getInstance(UserConfig.selectedAccount).dialogsGroupsOnly,
+            unreadCount(TabsHelper.getInstance(UserConfig.selectedAccount).dialogsGroups,
                     indexToPosition[TabIndex.Groups.value]);
 
         if (!TabsConfig.hideUsers)
-            unreadCount(MessagesController.getInstance(UserConfig.selectedAccount).dialogsUsersOnly,
+            unreadCount(TabsHelper.getInstance(UserConfig.selectedAccount).dialogsUsers,
                     indexToPosition[TabIndex.Users.value]);
 
         if (!TabsConfig.hideALl)

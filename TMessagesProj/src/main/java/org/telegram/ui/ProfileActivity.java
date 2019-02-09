@@ -176,6 +176,7 @@ public class ProfileActivity extends BaseFragment implements NotificationCenter.
     private final static int search_members = 17;
     private final static int add_member = 18;
     private final static int statistics = 19;
+    private final static int event_log = 20;
 
     private int rowCount;
 
@@ -509,6 +510,8 @@ public class ProfileActivity extends BaseFragment implements NotificationCenter.
                     showDialog(builder.create());
                 } else if (id == leave_group) {
                     leaveChatPressed();
+                } else if (id == event_log) {
+                    presentFragment(new ChannelAdminLogActivity(currentChat));
                 } else if (id == edit_channel) {
                     Bundle args = new Bundle();
                     args.putInt("chat_id", chat_id);
@@ -2864,6 +2867,12 @@ public class ProfileActivity extends BaseFragment implements NotificationCenter.
                 if (ChatObject.isChannel(chat)) {
                     if (ChatObject.hasAdminRights(chat) || ChatObject.canChangeChatInfo(chat)) {
                         editItem = menu.addItem(edit_channel, R.drawable.group_edit_profile);
+                    }
+                    if ((ChatObject.hasAdminRights(chat) || ChatObject.canChangeChatInfo(chat)) && ChatObject.isChannel(currentChat)) {
+                        if (item == null) {
+                            item = menu.addItem(10, R.drawable.ic_ab_other);
+                        }
+                        item.addSubItem(event_log, LocaleController.getString("EventLog", R.string.EventLog));
                     }
                     if (!chat.megagroup && chatInfo != null && chatInfo.can_view_stats) {
                         if (item == null) {

@@ -207,7 +207,7 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
                 lp.setMargins(0, 0, 0, 0);
                 listView.setPadding(0, 0, 0, 0);
                 actionBar.setCastShadows(true);
-                if (dialogsType > 5 || TabsConfig.hideTabs) {
+                if (dialogsType > 5) {
                     updateDialogsType(dialogsType = TabsHelper.DialogType.All);
                 }
             } else {
@@ -715,24 +715,22 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
 
             @Override
             protected boolean drawChild(Canvas canvas, View child, long drawingTime) {
-                if (child == tabsView && !TabsConfig.tabsToBottom) {
+                if (child == tabsView && tabsView.getVisibility() == VISIBLE && !TabsConfig.tabsToBottom) {
                     boolean result = super.drawChild(canvas, child, drawingTime);
                     if (parentLayout != null) {
-                        int actionBarHeight = 0;
+                        int playerBarHeight = 0;
                         int childCount = getChildCount();
                         for (int a = 0; a < childCount; a++) {
                             View view = getChildAt(a);
                             if (view == child) {
                                 continue;
                             }
-                            if (view instanceof ActionBar && view.getVisibility() == VISIBLE) {
-                                if (((ActionBar) view).getCastShadows()) {
-                                    actionBarHeight = actionBar.getMeasuredHeight();
-                                }
+                            if (view instanceof FragmentContextView && view.getVisibility() == VISIBLE) {
+                                playerBarHeight = ((FragmentContextView) view).getChildAt(0).getMeasuredHeight();
                                 break;
                             }
                         }
-                        parentLayout.drawHeaderShadow(canvas, actionBarHeight + tabsView.getMeasuredHeight());
+                        parentLayout.drawHeaderShadow(canvas, playerBarHeight + tabsView.getMeasuredHeight());
                     }
                     return result;
                 } else {
