@@ -247,11 +247,19 @@ public class LaunchActivity extends Activity implements ActionBarLayout.ActionBa
         setTheme(R.style.Theme_TMessages);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             if (NekoConfig.navigationBarTint) {
-                getWindow().setNavigationBarColor(Theme.getColor(Theme.key_actionBarDefault));
-                if (ColorUtils.calculateLuminance(Theme.getColor(Theme.key_actionBarDefault)) > 0.5 && Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                    getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR);
-                } else {
-                    getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_VISIBLE);
+                int color = Theme.getColor(NekoConfig.useMessagePanelColor ? Theme.key_chat_messagePanelBackground : Theme.key_actionBarDefault);
+                Window window = getWindow();
+                window.setNavigationBarColor(color);
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    if (ColorUtils.calculateLuminance(color) > 0.5) {
+                        int flags = window.getDecorView().getSystemUiVisibility();
+                        flags |= View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR;
+                        window.getDecorView().setSystemUiVisibility(flags);
+                    } else {
+                        int flags = window.getDecorView().getSystemUiVisibility();
+                        flags ^= View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR;
+                        window.getDecorView().setSystemUiVisibility(flags);
+                    }
                 }
             }
             try {
@@ -2702,11 +2710,19 @@ public class LaunchActivity extends Activity implements ActionBarLayout.ActionBa
             }
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
                 if (NekoConfig.navigationBarTint) {
-                    getWindow().setNavigationBarColor(Theme.getColor(Theme.key_actionBarDefault));
-                    if (ColorUtils.calculateLuminance(Theme.getColor(Theme.key_actionBarDefault)) > 0.5 && Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                        getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR);
-                    } else {
-                        getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_VISIBLE);
+                    int color = Theme.getColor(NekoConfig.useMessagePanelColor ? Theme.key_chat_messagePanelBackground : Theme.key_actionBarDefault);
+                    Window window = getWindow();
+                    window.setNavigationBarColor(color);
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                        if (ColorUtils.calculateLuminance(color) > 0.5) {
+                            int flags = window.getDecorView().getSystemUiVisibility();
+                            flags |= View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR;
+                            window.getDecorView().setSystemUiVisibility(flags);
+                        } else {
+                            int flags = window.getDecorView().getSystemUiVisibility();
+                            flags ^= View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR;
+                            window.getDecorView().setSystemUiVisibility(flags);
+                        }
                     }
                 }
                 try {

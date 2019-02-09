@@ -33,5 +33,8 @@
     <string name="TabsHeight">Height</string>
     <string name="TabsDisableScrolling">Disable scrolling</string>
     <string name="TabsDisableInfiniteScrolling">Disable infinite scrolling</string>
-    <string name="NavigationBarTint">Navigation bar tint</string>>
+    <string name="NavigationBar">Navigation bar</string>
+    <string name="NavigationBarTint">Navigation bar tint</string>
+    <string name="UseMessagePanelColor">Use message panel color</string>
+    <string name="CreateMention">Create Mention</string>
 </resources>

@@ -9,6 +9,7 @@ import android.support.v4.graphics.ColorUtils;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.Window;
 import android.widget.FrameLayout;
 
 import org.telegram.messenger.AndroidUtilities;
@@ -70,8 +71,12 @@ public class NekoSettingsActivity extends BaseFragment {
     private int singleBigEmojiRow;
     private int emoji2Row;
 
-    private int settingsRow;
+    private int navigationBarRow;
     private int navigationBarTintRow;
+    private int useMessagePanelColorRow;
+    private int navigationBar2Row;
+
+    private int settingsRow;
     private int hidePhoneRow;
     private int inappCameraRow;
     private int ignoreBlockedRow;
@@ -107,10 +112,13 @@ public class NekoSettingsActivity extends BaseFragment {
         useSystemEmojiRow = rowCount++;
         singleBigEmojiRow = rowCount++;
         emoji2Row = rowCount++;
-        settingsRow = rowCount++;
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            navigationBarRow = rowCount++;
             navigationBarTintRow = rowCount++;
+            useMessagePanelColorRow = rowCount++;
+            navigationBar2Row = rowCount++;
         }
+        settingsRow = rowCount++;
         hidePhoneRow = rowCount++;
         inappCameraRow = rowCount++;
         ignoreBlockedRow = rowCount++;
@@ -337,16 +345,45 @@ public class NekoSettingsActivity extends BaseFragment {
                 if (view instanceof TextCheckCell) {
                     ((TextCheckCell) view).setChecked(NekoConfig.navigationBarTint);
                 }
+                int color = Theme.getColor(NekoConfig.useMessagePanelColor ? Theme.key_chat_messagePanelBackground : Theme.key_actionBarDefault);
+                Window window = getParentActivity().getWindow();
                 if (NekoConfig.navigationBarTint) {
-                    getParentActivity().getWindow().setNavigationBarColor(Theme.getColor(Theme.key_actionBarDefault));
+                    window.setNavigationBarColor(color);
                 } else {
-                    getParentActivity().getWindow().setNavigationBarColor(0xff000000);
+                    window.setNavigationBarColor(0xff000000);
                 }
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                    if (ColorUtils.calculateLuminance(Theme.getColor(Theme.key_actionBarDefault)) > 0.5 && NekoConfig.navigationBarTint) {
-                        getParentActivity().getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR);
+                    if (ColorUtils.calculateLuminance(color) > 0.5 && NekoConfig.navigationBarTint) {
+                        int flags = window.getDecorView().getSystemUiVisibility();
+                        flags |= View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR;
+                        window.getDecorView().setSystemUiVisibility(flags);
                     } else {
-                        getParentActivity().getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_VISIBLE);
+                        int flags = window.getDecorView().getSystemUiVisibility();
+                        flags ^= View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR;
+                        window.getDecorView().setSystemUiVisibility(flags);
+                    }
+                }
+            } else if (position == useMessagePanelColorRow) {
+                NekoConfig.toggleUseMessagePanelColor();
+                if (view instanceof TextCheckCell) {
+                    ((TextCheckCell) view).setChecked(NekoConfig.useMessagePanelColor);
+                }
+                int color = Theme.getColor(NekoConfig.useMessagePanelColor ? Theme.key_chat_messagePanelBackground : Theme.key_actionBarDefault);
+                Window window = getParentActivity().getWindow();
+                if (NekoConfig.navigationBarTint) {
+                    window.setNavigationBarColor(color);
+                } else {
+                    window.setNavigationBarColor(0xff000000);
+                }
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    if (ColorUtils.calculateLuminance(color) > 0.5 && NekoConfig.navigationBarTint) {
+                        int flags = window.getDecorView().getSystemUiVisibility();
+                        flags |= View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR;
+                        window.getDecorView().setSystemUiVisibility(flags);
+                    } else {
+                        int flags = window.getDecorView().getSystemUiVisibility();
+                        flags ^= View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR;
+                        window.getDecorView().setSystemUiVisibility(flags);
                     }
                 }
             }
@@ -442,6 +479,8 @@ public class NekoSettingsActivity extends BaseFragment {
                         textCell.setTextAndCheck(LocaleController.getString("TabsDisableInfiniteScrolling", R.string.TabsDisableInfiniteScrolling), TabsConfig.disableTabsInfiniteScrolling, true);
                     } else if (position == navigationBarTintRow) {
                         textCell.setTextAndCheck(LocaleController.getString("NavigationBarTint", R.string.NavigationBarTint), NekoConfig.navigationBarTint, true);
+                    } else if (position == useMessagePanelColorRow) {
+                        textCell.setTextAndCheck(LocaleController.getString("UseMessagePanelColor", R.string.UseMessagePanelColor), NekoConfig.navigationBarTint, false);
                     }
                     break;
                 }
@@ -455,6 +494,8 @@ public class NekoSettingsActivity extends BaseFragment {
                         headerCell.setText(LocaleController.getString("Connection", R.string.Connection));
                     } else if (position == tabsRow) {
                         headerCell.setText(LocaleController.getString("TabsSettings", R.string.TabsSettings));
+                    } else if (position == navigationBarRow) {
+                        headerCell.setText(LocaleController.getString("NavigationBar", R.string.NavigationBar));
                     }
                     break;
                 }
@@ -480,7 +521,7 @@ public class NekoSettingsActivity extends BaseFragment {
                     position == hideGroupsRow || position == hideTabsCountersRow || position == hideTabsRow ||
                     position == hideUsersRow || position == tabsToBottomRow || position == tabsHeightRow ||
                     position == disableTabsScrollingRow || position == disableTabsInfiniteScrollingRow ||
-                    position == navigationBarTintRow;
+                    position == navigationBarTintRow || position == useMessagePanelColorRow;
         }
 
         @Override
@@ -517,7 +558,7 @@ public class NekoSettingsActivity extends BaseFragment {
 
         @Override
         public int getItemViewType(int position) {
-            if (position == settings2Row || position == emoji2Row || position == connection2Row || position == tabs2Row) {
+            if (position == settings2Row || position == emoji2Row || position == connection2Row || position == tabs2Row || position == navigationBar2Row) {
                 return 1;
             } else if (position == nameOrderRow || position == tabsHeightRow) {
                 return 2;
@@ -525,9 +566,10 @@ public class NekoSettingsActivity extends BaseFragment {
                     position == ignoreBlockedRow || position == useSystemEmojiRow || position == singleBigEmojiRow || position == hideAdminsRow ||
                     position == hideALlRow || position == hideBotsRow || position == hideChannelsRow || position == hideGroupsRow ||
                     position == hideTabsCountersRow || position == hideTabsRow || position == hideUsersRow || position == tabsToBottomRow ||
-                    position == disableTabsScrollingRow || position == disableTabsInfiniteScrollingRow || position == navigationBarTintRow) {
+                    position == disableTabsScrollingRow || position == disableTabsInfiniteScrollingRow || position == navigationBarTintRow ||
+                    position == useMessagePanelColorRow) {
                 return 3;
-            } else if (position == settingsRow || position == connectionRow || position == emojiRow || position == tabsRow) {
+            } else if (position == settingsRow || position == connectionRow || position == emojiRow || position == tabsRow || position == navigationBarRow) {
                 return 4;
             } else if (position == nekoProxyRow) {
                 return 5;

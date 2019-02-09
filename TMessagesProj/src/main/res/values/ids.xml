@@ -5,6 +5,7 @@
     <item name="menu_link" type="id"/>
     <item name="menu_mono" type="id"/>
     <item name="menu_groupbolditalic" type="id"/>
+    <item name="menu_mention" type="id"/>
     <item name="parent_tag" type="id"/>
     <item name="current_animation" type="id"/>
 </resources>

@@ -32,6 +32,7 @@ public class NekoConfig {
     public static boolean hidePhone = true;
     public static boolean ignoreBlocked = false;
     public static boolean navigationBarTint = true;
+    public static boolean useMessagePanelColor = true;
 
     public static int nameOrder = 1;
 
@@ -49,6 +50,7 @@ public class NekoConfig {
                 editor.putBoolean("hidePhone", hidePhone);
                 editor.putBoolean("ignoreBlocked", ignoreBlocked);
                 editor.putBoolean("navigationBarTint", navigationBarTint);
+                editor.putBoolean("useMessagePanelColor", useMessagePanelColor);
                 editor.putInt("nameOrder", nameOrder);
 
                 editor.commit();
@@ -69,6 +71,7 @@ public class NekoConfig {
             hidePhone = preferences.getBoolean("hidePhone", true);
             ignoreBlocked = preferences.getBoolean("ignoreBlocked", false);
             navigationBarTint = preferences.getBoolean("navigationBarTint", true);
+            useMessagePanelColor = preferences.getBoolean("useMessagePanelColor", true);
             nameOrder = preferences.getInt("nameOrder", 1);
             configLoaded = true;
         }
@@ -103,6 +106,14 @@ public class NekoConfig {
         SharedPreferences preferences = ApplicationLoader.applicationContext.getSharedPreferences("nekoconfig", Activity.MODE_PRIVATE);
         SharedPreferences.Editor editor = preferences.edit();
         editor.putBoolean("navigationBarTint", navigationBarTint);
+        editor.commit();
+    }
+
+    public static void toggleUseMessagePanelColor() {
+        useMessagePanelColor = !useMessagePanelColor;
+        SharedPreferences preferences = ApplicationLoader.applicationContext.getSharedPreferences("nekoconfig", Activity.MODE_PRIVATE);
+        SharedPreferences.Editor editor = preferences.edit();
+        editor.putBoolean("useMessagePanelColor", useMessagePanelColor);
         editor.commit();
     }
 

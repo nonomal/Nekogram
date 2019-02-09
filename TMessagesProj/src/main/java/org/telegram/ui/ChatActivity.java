@@ -582,6 +582,7 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
     private final static int text_mono = 52;
     private final static int text_link = 53;
     private final static int text_regular = 54;
+    private final static int text_mention = 55;
 
     private final static int search = 40;
 
@@ -1253,6 +1254,11 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
                         chatActivityEnterView.getEditField().setSelectionOverride(editTextStart, editTextEnd);
                         chatActivityEnterView.getEditField().makeSelectedUrl();
                     }
+                } else if (id == text_mention) {
+                    if (chatActivityEnterView != null) {
+                        chatActivityEnterView.getEditField().setSelectionOverride(editTextStart, editTextEnd);
+                        chatActivityEnterView.getEditField().makeSelectedMention();
+                    }
                 } else if (id == text_regular) {
                     if (chatActivityEnterView != null) {
                         chatActivityEnterView.getEditField().setSelectionOverride(editTextStart, editTextEnd);
@@ -1414,6 +1420,7 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
         stringBuilder.setSpan(new TypefaceSpan(Typeface.MONOSPACE), 0, stringBuilder.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
         editTextItem.addSubItem(text_mono, stringBuilder);
         editTextItem.addSubItem(text_link, LocaleController.getString("CreateLink", R.string.CreateLink));
+        editTextItem.addSubItem(text_mention, LocaleController.getString("CreateMention", R.string.CreateMention));
         editTextItem.addSubItem(text_regular, LocaleController.getString("Regular", R.string.Regular));
 
         if (searchItem != null) {
@@ -9622,7 +9629,8 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
         stringBuilder.setSpan(new TypefaceSpan(Typeface.MONOSPACE), 0, stringBuilder.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
         menu.add(R.id.menu_groupbolditalic, R.id.menu_mono, 8, stringBuilder);
         menu.add(R.id.menu_groupbolditalic, R.id.menu_link, 9, LocaleController.getString("CreateLink", R.string.CreateLink));
-        menu.add(R.id.menu_groupbolditalic, R.id.menu_regular, 10, LocaleController.getString("Regular", R.string.Regular));
+        menu.add(R.id.menu_groupbolditalic, R.id.menu_mention, 10, LocaleController.getString("CreateMention", R.string.CreateMention));
+        menu.add(R.id.menu_groupbolditalic, R.id.menu_regular, 11, LocaleController.getString("Regular", R.string.Regular));
         return true;
     }
 
