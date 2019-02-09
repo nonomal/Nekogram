@@ -33,4 +33,8 @@
     <string name="TabsHeight">高度</string>
     <string name="TabsDisableScrolling">停用滑動</string>
     <string name="TabsDisableInfiniteScrolling">停用無限滑動</string>
+    <string name="NavigationBar">導覽列</string>
+    <string name="NavigationBarTint">導覽列變色</string>
+    <string name="UseMessagePanelColor">使用訊息面板顏色</string>
+    <string name="CreateMention">提及使用者</string>
 </resources>

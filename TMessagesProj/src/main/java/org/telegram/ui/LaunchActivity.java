@@ -103,6 +103,7 @@ import java.util.List;
 import java.util.Map;
 
 import tw.nekomimi.nekogram.NekoConfig;
+import tw.nekomimi.nekogram.ThemeHelper;
 
 public class LaunchActivity extends Activity implements ActionBarLayout.ActionBarLayoutDelegate, NotificationCenter.NotificationCenterDelegate, DialogsActivity.DialogsActivityDelegate {
 
@@ -246,28 +247,14 @@ public class LaunchActivity extends Activity implements ActionBarLayout.ActionBa
         requestWindowFeature(Window.FEATURE_NO_TITLE);
         setTheme(R.style.Theme_TMessages);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            if (NekoConfig.navigationBarTint) {
-                int color = Theme.getColor(NekoConfig.useMessagePanelColor ? Theme.key_chat_messagePanelBackground : Theme.key_actionBarDefault);
-                Window window = getWindow();
-                window.setNavigationBarColor(color);
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                    if (ColorUtils.calculateLuminance(color) > 0.5) {
-                        int flags = window.getDecorView().getSystemUiVisibility();
-                        flags |= View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR;
-                        window.getDecorView().setSystemUiVisibility(flags);
-                    } else {
-                        int flags = window.getDecorView().getSystemUiVisibility();
-                        flags ^= View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR;
-                        window.getDecorView().setSystemUiVisibility(flags);
-                    }
-                }
-            }
             try {
                 setTaskDescription(new ActivityManager.TaskDescription(null, null, Theme.getColor(Theme.key_actionBarDefault) | 0xff000000));
             } catch (Exception e) {
                 //
             }
         }
+
+        ThemeHelper.setupNavigationBar(getWindow());
 
         getWindow().setBackgroundDrawableResource(R.drawable.transparent);
         if (SharedConfig.passcodeHash.length() > 0 && !SharedConfig.allowScreenCapture) {
@@ -2709,28 +2696,13 @@ public class LaunchActivity extends Activity implements ActionBarLayout.ActionBa
                 }
             }
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                if (NekoConfig.navigationBarTint) {
-                    int color = Theme.getColor(NekoConfig.useMessagePanelColor ? Theme.key_chat_messagePanelBackground : Theme.key_actionBarDefault);
-                    Window window = getWindow();
-                    window.setNavigationBarColor(color);
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                        if (ColorUtils.calculateLuminance(color) > 0.5) {
-                            int flags = window.getDecorView().getSystemUiVisibility();
-                            flags |= View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR;
-                            window.getDecorView().setSystemUiVisibility(flags);
-                        } else {
-                            int flags = window.getDecorView().getSystemUiVisibility();
-                            flags ^= View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR;
-                            window.getDecorView().setSystemUiVisibility(flags);
-                        }
-                    }
-                }
                 try {
                     setTaskDescription(new ActivityManager.TaskDescription(null, null, Theme.getColor(Theme.key_actionBarDefault) | 0xff000000));
                 } catch (Exception ignore) {
 
                 }
             }
+            ThemeHelper.setupNavigationBar(getWindow());
         } else if (id == NotificationCenter.needSetDayNightTheme) {
             Theme.ThemeInfo theme = (Theme.ThemeInfo) args[0];
             boolean nigthTheme = (Boolean) args[1];

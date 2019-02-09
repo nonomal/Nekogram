@@ -1244,6 +1244,8 @@
     <string name="VibrationDefault">默认</string>
     <string name="SmartNotifications">智能通知</string>
     <string name="NotificationsExceptions">例外</string>
+    <string name="NotificationsAddAnException">添加一个例外</string>
+    <string name="NotificationsNewException">新例外</string>
     <string name="NoExceptions">此区域将列出所有使用自定义通知设置的对话。\n\n您可以通过资料页中 “通知” 设置来自定义通知。</string>
     <string name="EmptyExceptions">无</string>
     <string name="SmartNotificationsInfo">%2$s %1$d 次</string>

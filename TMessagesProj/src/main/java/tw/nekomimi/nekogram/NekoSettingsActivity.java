@@ -345,47 +345,13 @@ public class NekoSettingsActivity extends BaseFragment {
                 if (view instanceof TextCheckCell) {
                     ((TextCheckCell) view).setChecked(NekoConfig.navigationBarTint);
                 }
-                int color = Theme.getColor(NekoConfig.useMessagePanelColor ? Theme.key_chat_messagePanelBackground : Theme.key_actionBarDefault);
-                Window window = getParentActivity().getWindow();
-                if (NekoConfig.navigationBarTint) {
-                    window.setNavigationBarColor(color);
-                } else {
-                    window.setNavigationBarColor(0xff000000);
-                }
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                    if (ColorUtils.calculateLuminance(color) > 0.5 && NekoConfig.navigationBarTint) {
-                        int flags = window.getDecorView().getSystemUiVisibility();
-                        flags |= View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR;
-                        window.getDecorView().setSystemUiVisibility(flags);
-                    } else {
-                        int flags = window.getDecorView().getSystemUiVisibility();
-                        flags ^= View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR;
-                        window.getDecorView().setSystemUiVisibility(flags);
-                    }
-                }
+                ThemeHelper.setupNavigationBar(getParentActivity().getWindow());
             } else if (position == useMessagePanelColorRow) {
                 NekoConfig.toggleUseMessagePanelColor();
                 if (view instanceof TextCheckCell) {
                     ((TextCheckCell) view).setChecked(NekoConfig.useMessagePanelColor);
                 }
-                int color = Theme.getColor(NekoConfig.useMessagePanelColor ? Theme.key_chat_messagePanelBackground : Theme.key_actionBarDefault);
-                Window window = getParentActivity().getWindow();
-                if (NekoConfig.navigationBarTint) {
-                    window.setNavigationBarColor(color);
-                } else {
-                    window.setNavigationBarColor(0xff000000);
-                }
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                    if (ColorUtils.calculateLuminance(color) > 0.5 && NekoConfig.navigationBarTint) {
-                        int flags = window.getDecorView().getSystemUiVisibility();
-                        flags |= View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR;
-                        window.getDecorView().setSystemUiVisibility(flags);
-                    } else {
-                        int flags = window.getDecorView().getSystemUiVisibility();
-                        flags ^= View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR;
-                        window.getDecorView().setSystemUiVisibility(flags);
-                    }
-                }
+                ThemeHelper.setupNavigationBar(getParentActivity().getWindow());
             }
         });
 
@@ -480,7 +446,7 @@ public class NekoSettingsActivity extends BaseFragment {
                     } else if (position == navigationBarTintRow) {
                         textCell.setTextAndCheck(LocaleController.getString("NavigationBarTint", R.string.NavigationBarTint), NekoConfig.navigationBarTint, true);
                     } else if (position == useMessagePanelColorRow) {
-                        textCell.setTextAndCheck(LocaleController.getString("UseMessagePanelColor", R.string.UseMessagePanelColor), NekoConfig.navigationBarTint, false);
+                        textCell.setTextAndCheck(LocaleController.getString("UseMessagePanelColor", R.string.UseMessagePanelColor), NekoConfig.useMessagePanelColor, false);
                     }
                     break;
                 }
