@@ -1,8 +1,11 @@
 package tw.nekomimi.nekogram;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.os.Build;
+import android.support.v4.graphics.ColorUtils;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
@@ -68,6 +71,7 @@ public class NekoSettingsActivity extends BaseFragment {
     private int emoji2Row;
 
     private int settingsRow;
+    private int navigationBarTintRow;
     private int hidePhoneRow;
     private int inappCameraRow;
     private int ignoreBlockedRow;
@@ -104,6 +108,9 @@ public class NekoSettingsActivity extends BaseFragment {
         singleBigEmojiRow = rowCount++;
         emoji2Row = rowCount++;
         settingsRow = rowCount++;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            navigationBarTintRow = rowCount++;
+        }
         hidePhoneRow = rowCount++;
         inappCameraRow = rowCount++;
         ignoreBlockedRow = rowCount++;
@@ -113,6 +120,7 @@ public class NekoSettingsActivity extends BaseFragment {
         return true;
     }
 
+    @SuppressLint("NewApi")
     @Override
     public View createView(Context context) {
         actionBar.setBackButtonImage(R.drawable.ic_ab_back);
@@ -324,6 +332,23 @@ public class NekoSettingsActivity extends BaseFragment {
                     ((TextCheckCell) view).setChecked(TabsConfig.disableTabsInfiniteScrolling);
                 }
                 NotificationCenter.getGlobalInstance().postNotificationName(NotificationCenter.refreshTabs, 2);
+            } else if (position == navigationBarTintRow) {
+                NekoConfig.toggleNavigationBarTint();
+                if (view instanceof TextCheckCell) {
+                    ((TextCheckCell) view).setChecked(NekoConfig.navigationBarTint);
+                }
+                if (NekoConfig.navigationBarTint) {
+                    getParentActivity().getWindow().setNavigationBarColor(Theme.getColor(Theme.key_actionBarDefault));
+                } else {
+                    getParentActivity().getWindow().setNavigationBarColor(0xff000000);
+                }
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    if (ColorUtils.calculateLuminance(Theme.getColor(Theme.key_actionBarDefault)) > 0.5 && NekoConfig.navigationBarTint) {
+                        getParentActivity().getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR);
+                    } else {
+                        getParentActivity().getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_VISIBLE);
+                    }
+                }
             }
         });
 
@@ -415,6 +440,8 @@ public class NekoSettingsActivity extends BaseFragment {
                         textCell.setTextAndCheck(LocaleController.getString("TabsDisableScrolling", R.string.TabsDisableScrolling), TabsConfig.disableTabsScrolling, true);
                     } else if (position == disableTabsInfiniteScrollingRow) {
                         textCell.setTextAndCheck(LocaleController.getString("TabsDisableInfiniteScrolling", R.string.TabsDisableInfiniteScrolling), TabsConfig.disableTabsInfiniteScrolling, true);
+                    } else if (position == navigationBarTintRow) {
+                        textCell.setTextAndCheck(LocaleController.getString("NavigationBarTint", R.string.NavigationBarTint), NekoConfig.navigationBarTint, true);
                     }
                     break;
                 }
@@ -446,12 +473,14 @@ public class NekoSettingsActivity extends BaseFragment {
         @Override
         public boolean isEnabled(RecyclerView.ViewHolder holder) {
             int position = holder.getAdapterPosition();
-            return position == hidePhoneRow || position == inappCameraRow ||
-                    position == ignoreBlockedRow || position == useSystemEmojiRow || position == singleBigEmojiRow ||
-                    position == ipv6Row || position == nameOrderRow || position == nekoProxyRow || position == hideAdminsRow ||
-                    position == hideALlRow || position == hideBotsRow || position == hideChannelsRow || position == hideGroupsRow ||
-                    position == hideTabsCountersRow || position == hideTabsRow || position == hideUsersRow || position == tabsToBottomRow ||
-                    position == tabsHeightRow || position == disableTabsScrollingRow || position == disableTabsInfiniteScrollingRow;
+            return position == hidePhoneRow || position == inappCameraRow || position == ignoreBlockedRow ||
+                    position == useSystemEmojiRow || position == singleBigEmojiRow || position == ipv6Row ||
+                    position == nameOrderRow || position == nekoProxyRow || position == hideAdminsRow ||
+                    position == hideALlRow || position == hideBotsRow || position == hideChannelsRow ||
+                    position == hideGroupsRow || position == hideTabsCountersRow || position == hideTabsRow ||
+                    position == hideUsersRow || position == tabsToBottomRow || position == tabsHeightRow ||
+                    position == disableTabsScrollingRow || position == disableTabsInfiniteScrollingRow ||
+                    position == navigationBarTintRow;
         }
 
         @Override
@@ -496,7 +525,7 @@ public class NekoSettingsActivity extends BaseFragment {
                     position == ignoreBlockedRow || position == useSystemEmojiRow || position == singleBigEmojiRow || position == hideAdminsRow ||
                     position == hideALlRow || position == hideBotsRow || position == hideChannelsRow || position == hideGroupsRow ||
                     position == hideTabsCountersRow || position == hideTabsRow || position == hideUsersRow || position == tabsToBottomRow ||
-                    position == disableTabsScrollingRow || position == disableTabsInfiniteScrollingRow) {
+                    position == disableTabsScrollingRow || position == disableTabsInfiniteScrollingRow || position == navigationBarTintRow) {
                 return 3;
             } else if (position == settingsRow || position == connectionRow || position == emojiRow || position == tabsRow) {
                 return 4;

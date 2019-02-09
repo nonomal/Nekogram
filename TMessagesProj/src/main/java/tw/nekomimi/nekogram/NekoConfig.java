@@ -8,7 +8,6 @@ import android.text.TextUtils;
 import android.util.Base64;
 
 import org.json.JSONArray;
-import org.json.JSONObject;
 import org.telegram.messenger.ApplicationLoader;
 import org.telegram.messenger.BuildVars;
 import org.telegram.messenger.FileLog;
@@ -22,13 +21,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.net.URL;
 import java.net.URLConnection;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.Locale;
 
 public class NekoConfig {
 
@@ -38,6 +31,7 @@ public class NekoConfig {
     public static boolean useIPv6 = false;
     public static boolean hidePhone = true;
     public static boolean ignoreBlocked = false;
+    public static boolean navigationBarTint = true;
 
     public static int nameOrder = 1;
 
@@ -54,7 +48,9 @@ public class NekoConfig {
                 editor.putBoolean("useIPv6", useIPv6);
                 editor.putBoolean("hidePhone", hidePhone);
                 editor.putBoolean("ignoreBlocked", ignoreBlocked);
+                editor.putBoolean("navigationBarTint", navigationBarTint);
                 editor.putInt("nameOrder", nameOrder);
+
                 editor.commit();
             } catch (Exception e) {
                 FileLog.e(e);
@@ -72,6 +68,7 @@ public class NekoConfig {
             useIPv6 = preferences.getBoolean("useIPv6", false);
             hidePhone = preferences.getBoolean("hidePhone", true);
             ignoreBlocked = preferences.getBoolean("ignoreBlocked", false);
+            navigationBarTint = preferences.getBoolean("navigationBarTint", true);
             nameOrder = preferences.getInt("nameOrder", 1);
             configLoaded = true;
         }
@@ -98,6 +95,14 @@ public class NekoConfig {
         SharedPreferences preferences = ApplicationLoader.applicationContext.getSharedPreferences("nekoconfig", Activity.MODE_PRIVATE);
         SharedPreferences.Editor editor = preferences.edit();
         editor.putBoolean("ignoreBlocked", ignoreBlocked);
+        editor.commit();
+    }
+
+    public static void toggleNavigationBarTint() {
+        navigationBarTint = !navigationBarTint;
+        SharedPreferences preferences = ApplicationLoader.applicationContext.getSharedPreferences("nekoconfig", Activity.MODE_PRIVATE);
+        SharedPreferences.Editor editor = preferences.edit();
+        editor.putBoolean("navigationBarTint", navigationBarTint);
         editor.commit();
     }
 

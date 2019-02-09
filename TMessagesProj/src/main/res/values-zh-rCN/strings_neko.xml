@@ -33,4 +33,5 @@
     <string name="TabsHeight">高度</string>
     <string name="TabsDisableScrolling">禁用滑动</string>
     <string name="TabsDisableInfiniteScrolling">禁用无限滑动</string>
+    <string name="NavigationBarTint">导航栏变色</string>
 </resources>

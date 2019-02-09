@@ -27,6 +27,7 @@ import android.os.Bundle;
 import android.os.Parcelable;
 import android.os.StatFs;
 import android.provider.ContactsContract;
+import android.support.v4.graphics.ColorUtils;
 import android.text.TextUtils;
 import android.view.ActionMode;
 import android.view.KeyEvent;
@@ -100,6 +101,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import tw.nekomimi.nekogram.NekoConfig;
 
 public class LaunchActivity extends Activity implements ActionBarLayout.ActionBarLayoutDelegate, NotificationCenter.NotificationCenterDelegate, DialogsActivity.DialogsActivityDelegate {
 
@@ -243,6 +246,14 @@ public class LaunchActivity extends Activity implements ActionBarLayout.ActionBa
         requestWindowFeature(Window.FEATURE_NO_TITLE);
         setTheme(R.style.Theme_TMessages);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            if (NekoConfig.navigationBarTint) {
+                getWindow().setNavigationBarColor(Theme.getColor(Theme.key_actionBarDefault));
+                if (ColorUtils.calculateLuminance(Theme.getColor(Theme.key_actionBarDefault)) > 0.5 && Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR);
+                } else {
+                    getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_VISIBLE);
+                }
+            }
             try {
                 setTaskDescription(new ActivityManager.TaskDescription(null, null, Theme.getColor(Theme.key_actionBarDefault) | 0xff000000));
             } catch (Exception e) {
@@ -1779,7 +1790,7 @@ public class LaunchActivity extends Activity implements ActionBarLayout.ActionBa
                 }
             }));
         } else if (group != null) {
-            if (state == 0 || state == 3) {
+            if (state != 1) {
                 final TLRPC.TL_messages_checkChatInvite req = new TLRPC.TL_messages_checkChatInvite();
                 req.hash = group;
                 requestId[0] = ConnectionsManager.getInstance(intentAccount).sendRequest(req, (response, error) -> AndroidUtilities.runOnUIThread(() -> {
@@ -2688,12 +2699,20 @@ public class LaunchActivity extends Activity implements ActionBarLayout.ActionBa
                     sideMenu.setGlowColor(Theme.getColor(Theme.key_chats_menuBackground));
                     sideMenu.getAdapter().notifyDataSetChanged();
                 }
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                    try {
-                        setTaskDescription(new ActivityManager.TaskDescription(null, null, Theme.getColor(Theme.key_actionBarDefault) | 0xff000000));
-                    } catch (Exception ignore) {
-
+            }
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                if (NekoConfig.navigationBarTint) {
+                    getWindow().setNavigationBarColor(Theme.getColor(Theme.key_actionBarDefault));
+                    if (ColorUtils.calculateLuminance(Theme.getColor(Theme.key_actionBarDefault)) > 0.5 && Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                        getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR);
+                    } else {
+                        getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_VISIBLE);
                     }
+                }
+                try {
+                    setTaskDescription(new ActivityManager.TaskDescription(null, null, Theme.getColor(Theme.key_actionBarDefault) | 0xff000000));
+                } catch (Exception ignore) {
+
                 }
             }
         } else if (id == NotificationCenter.needSetDayNightTheme) {

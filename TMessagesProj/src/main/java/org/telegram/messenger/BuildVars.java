@@ -18,8 +18,8 @@ public class BuildVars {
     public static boolean LOGS_ENABLED = false;
     public static boolean USE_CLOUD_STRINGS = true;
     public static boolean CHECK_UPDATES = false;
-    public static int BUILD_VERSION = 1497 + 2;
-    public static String BUILD_VERSION_STRING = "5.3.1.2";
+    public static int BUILD_VERSION = 1497 + 3;
+    public static String BUILD_VERSION_STRING = "5.3.1.3";
     public static int APP_ID = BuildConfig.APP_ID; //obtain your own APP_ID at https://core.telegram.org/api/obtaining_api_id
     public static String APP_HASH = BuildConfig.APP_HASH; //obtain your own APP_HASH at https://core.telegram.org/api/obtaining_api_id
     public static String PLAYSTORE_APP_URL = "";
