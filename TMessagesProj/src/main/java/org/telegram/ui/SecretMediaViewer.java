@@ -65,6 +65,8 @@ import org.telegram.ui.Components.VideoPlayer;
 import java.io.File;
 import java.util.ArrayList;
 
+import tw.nekomimi.nekogram.ThemeHelper;
+
 public class SecretMediaViewer implements NotificationCenter.NotificationCenterDelegate, GestureDetector.OnGestureListener, GestureDetector.OnDoubleTapListener {
 
     private class FrameLayoutDrawer extends FrameLayout {
@@ -670,6 +672,7 @@ public class SecretMediaViewer implements NotificationCenter.NotificationCenterD
                 return insets.consumeSystemWindowInsets();
             });
             containerView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_STABLE | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN);
+            ThemeHelper.setupNavigationBar(containerView);
         }
 
         gestureDetector = new GestureDetector(containerView.getContext(), this);

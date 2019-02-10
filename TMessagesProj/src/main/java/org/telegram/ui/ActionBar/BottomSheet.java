@@ -23,6 +23,7 @@ import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.os.Bundle;
+import android.support.v4.graphics.ColorUtils;
 import android.support.v4.view.NestedScrollingParent;
 import android.support.v4.view.NestedScrollingParentHelper;
 import android.support.v4.view.ViewCompat;
@@ -51,6 +52,9 @@ import org.telegram.messenger.UserConfig;
 import org.telegram.ui.Components.LayoutHelper;
 
 import java.util.ArrayList;
+
+import tw.nekomimi.nekogram.NekoConfig;
+import tw.nekomimi.nekogram.ThemeHelper;
 
 public class BottomSheet extends Dialog {
 
@@ -577,6 +581,7 @@ public class BottomSheet extends Dialog {
                 return insets.consumeSystemWindowInsets();
             });
             container.setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_STABLE | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN);
+            ThemeHelper.setupNavigationBar(container);
         }
 
         backDrawable.setAlpha(0);

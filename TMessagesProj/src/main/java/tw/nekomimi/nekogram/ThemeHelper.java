@@ -8,23 +8,34 @@ import android.view.Window;
 import org.telegram.ui.ActionBar.Theme;
 
 public class ThemeHelper {
+
     public static void setupNavigationBar(Window window) {
+        int color = Theme.getColor(NekoConfig.useMessagePanelColor ? Theme.key_chat_messagePanelBackground : Theme.key_actionBarDefault);
+        setupNavigationBar(window, window.getDecorView(), color);
+    }
+
+    public static void setupNavigationBar(View view) {
+        int color = Theme.getColor(NekoConfig.useMessagePanelColor ? Theme.key_chat_messagePanelBackground : Theme.key_actionBarDefault);
+        setupNavigationBar(null, view, color);
+    }
+
+    public static void setupNavigationBar(Window window, View view, int color) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            int color = Theme.getColor(NekoConfig.useMessagePanelColor ? Theme.key_chat_messagePanelBackground : Theme.key_actionBarDefault);
-            if (NekoConfig.navigationBarTint) {
-                window.setNavigationBarColor(color);
-            } else {
-                window.setNavigationBarColor(0xff000000);
+            if (window != null) {
+                if (NekoConfig.navigationBarTint) {
+                    window.setNavigationBarColor(color);
+                } else {
+                    window.setNavigationBarColor(0xff000000);
+                }
             }
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                int flags = view.getSystemUiVisibility();
                 if (ColorUtils.calculateLuminance(color) > 0.5 && NekoConfig.navigationBarTint) {
-                    int flags = window.getDecorView().getSystemUiVisibility();
                     flags |= View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR;
-                    window.getDecorView().setSystemUiVisibility(flags);
+                    view.setSystemUiVisibility(flags);
                 } else {
-                    int flags = window.getDecorView().getSystemUiVisibility();
                     flags &= ~View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR;
-                    window.getDecorView().setSystemUiVisibility(flags);
+                    view.setSystemUiVisibility(flags);
                 }
             }
         }

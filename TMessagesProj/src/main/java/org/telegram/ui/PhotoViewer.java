@@ -176,6 +176,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 
+import tw.nekomimi.nekogram.ThemeHelper;
+
 @SuppressWarnings("unchecked")
 public class PhotoViewer implements NotificationCenter.NotificationCenterDelegate, GestureDetector.OnGestureListener, GestureDetector.OnDoubleTapListener {
 
@@ -1882,6 +1884,7 @@ public class PhotoViewer implements NotificationCenter.NotificationCenterDelegat
             });
             //windowView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_STABLE | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN /*| View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION*/);
             containerView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_STABLE | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION);
+            ThemeHelper.setupNavigationBar(containerView);
         }
 
         windowLayoutParams = new WindowManager.LayoutParams();
@@ -4650,8 +4653,10 @@ public class PhotoViewer implements NotificationCenter.NotificationCenterDelegat
             int flags = View.SYSTEM_UI_FLAG_FULLSCREEN | (containerView.getPaddingLeft() > 0 || containerView.getPaddingRight() > 0 ? (View.SYSTEM_UI_FLAG_HIDE_NAVIGATION | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY) : 0);
             if (show) {
                 containerView.setSystemUiVisibility(containerView.getSystemUiVisibility() & ~flags);
+                ThemeHelper.setupNavigationBar(containerView);
             } else {
                 containerView.setSystemUiVisibility(containerView.getSystemUiVisibility() | flags);
+                ThemeHelper.setupNavigationBar(containerView);
             }
         }
 
@@ -5354,8 +5359,26 @@ public class PhotoViewer implements NotificationCenter.NotificationCenterDelegat
             if (index < 0 || index >= imagesArrLocations.size()) {
                 return;
             }
-            nameTextView.setText("");
-            dateTextView.setText("");
+            if (avatarsDialogId < 0) {
+                TLRPC.Chat chat = MessagesController.getInstance(currentAccount).getChat(-avatarsDialogId);
+                if (chat != null) {
+                    nameTextView.setText(chat.title);
+                } else {
+                    nameTextView.setText("");
+                }
+            } else {
+                TLRPC.User user = MessagesController.getInstance(currentAccount).getUser(avatarsDialogId);
+                if (user != null) {
+                    nameTextView.setText(UserObject.getUserName(user));
+                } else {
+                    nameTextView.setText("");
+                }
+            }
+            long date =  (long) avatarsArr.get(switchingToIndex).date * 1000;
+            if (date != 0) {
+                String dateString = LocaleController.formatString("formatDateAtTime", R.string.formatDateAtTime, LocaleController.getInstance().formatterYear.format(new Date(date)), LocaleController.getInstance().formatterDay.format(new Date(date)));
+                dateTextView.setText(dateString);
+            }
             if (avatarsDialogId == UserConfig.getInstance(currentAccount).getClientUserId() && !avatarsArr.isEmpty()) {
                 menuItem.showSubItem(gallery_menu_delete);
             } else {
@@ -6596,6 +6619,7 @@ public class PhotoViewer implements NotificationCenter.NotificationCenterDelegat
             int flagsToClear = containerView.getSystemUiVisibility() & (View.SYSTEM_UI_FLAG_FULLSCREEN | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION);
             if (flagsToClear != 0) {
                 containerView.setSystemUiVisibility(containerView.getSystemUiVisibility() & ~flagsToClear);
+                ThemeHelper.setupNavigationBar(containerView);
             }
         }
         if (currentEditMode != 0) {
