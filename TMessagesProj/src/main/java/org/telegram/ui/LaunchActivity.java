@@ -17,6 +17,7 @@ import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.database.Cursor;
+import android.graphics.Canvas;
 import android.graphics.Point;
 import android.graphics.Shader;
 import android.graphics.drawable.BitmapDrawable;
@@ -97,7 +98,9 @@ import java.util.List;
 import java.util.Map;
 
 import androidx.recyclerview.widget.DefaultItemAnimator;
+import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 public class LaunchActivity extends Activity implements ActionBarLayout.ActionBarLayoutDelegate, NotificationCenter.NotificationCenterDelegate, DialogsActivity.DialogsActivityDelegate {
 
@@ -148,6 +151,57 @@ public class LaunchActivity extends Activity implements ActionBarLayout.ActionBa
     private boolean tabletFullSize;
 
     private Runnable lockRunnable;
+
+    private class DrawerItemTouchHelperCallback extends ItemTouchHelper.Callback {
+
+        @Override
+        public boolean isLongPressDragEnabled() {
+            return true;
+        }
+
+        @Override
+        public int getMovementFlags(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder) {
+            if (viewHolder != null && viewHolder.getItemViewType() != 4) {
+                return makeMovementFlags(0, 0);
+            }
+            return makeMovementFlags(ItemTouchHelper.UP | ItemTouchHelper.DOWN, 0);
+        }
+
+        @Override
+        public void onChildDraw(Canvas c, RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder, float dX, float dY, int actionState, boolean isCurrentlyActive) {
+            super.onChildDraw(c, recyclerView, viewHolder, dX, dY, actionState, isCurrentlyActive);
+        }
+
+        @Override
+        public void onSelectedChanged(RecyclerView.ViewHolder viewHolder, int actionState) {
+            if (viewHolder != null && viewHolder.getItemViewType() == 4 && actionState != ItemTouchHelper.ACTION_STATE_IDLE) {
+                sideMenu.cancelClickRunnables(false);
+                viewHolder.itemView.setPressed(true);
+            }
+            super.onSelectedChanged(viewHolder, actionState);
+        }
+
+        @Override
+        public void onSwiped(RecyclerView.ViewHolder viewHolder, int direction) {
+
+        }
+
+        @Override
+        public void clearView(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder) {
+            super.clearView(recyclerView, viewHolder);
+            viewHolder.itemView.setPressed(false);
+        }
+
+        @Override
+        public boolean onMove(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder, RecyclerView.ViewHolder target) {
+            if (viewHolder.getItemViewType() == 4 && target.getItemViewType() == 4 &&
+                    viewHolder.getAdapterPosition() != target.getAdapterPosition()) {
+                drawerLayoutAdapter.swapAccountPosition(viewHolder.getAdapterPosition(), target.getAdapterPosition());
+                return true;
+            }
+            return false;
+        }
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -370,6 +424,10 @@ public class LaunchActivity extends Activity implements ActionBarLayout.ActionBa
         sideMenu.setBackgroundColor(Theme.getColor(Theme.key_chats_menuBackground));
         sideMenu.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false));
         sideMenu.setAdapter(drawerLayoutAdapter = new DrawerLayoutAdapter(this));
+
+        ItemTouchHelper drawerItemTouchHelper = new ItemTouchHelper(new DrawerItemTouchHelperCallback());
+        drawerItemTouchHelper.attachToRecyclerView(sideMenu);
+
         drawerLayoutContainer.setDrawerLayout(sideMenu);
         FrameLayout.LayoutParams layoutParams = (FrameLayout.LayoutParams) sideMenu.getLayoutParams();
         Point screenSize = AndroidUtilities.getRealScreenSize();
@@ -1079,6 +1137,7 @@ public class LaunchActivity extends Activity implements ActionBarLayout.ActionBa
                             Integer channelId = null;
                             boolean hasUrl = false;
                             String scheme = data.getScheme();
+                            boolean internal = intent.getExtras().get("internal") != null && (boolean) intent.getExtras().get("internal");
                             if (scheme != null) {
                                 if ((scheme.equals("http") || scheme.equals("https"))) {
                                     String host = data.getHost().toLowerCase();
@@ -1363,7 +1422,7 @@ public class LaunchActivity extends Activity implements ActionBarLayout.ActionBa
                                     if (message != null && message.startsWith("@")) {
                                         message = " " + message;
                                     }
-                                    runLinkRequest(intentAccount[0], username, group, sticker, botUser, botChat, message, hasUrl, messageId, channelId, game, auth, lang, unsupportedUrl, code, wallPaper, 0);
+                                    runLinkRequest(intentAccount[0], username, group, sticker, botUser, botChat, message, hasUrl, messageId, channelId, game, auth, lang, unsupportedUrl, code, wallPaper, internal ? 3 : 0);
                                 } else {
                                     try (Cursor cursor = getContentResolver().query(intent.getData(), null, null, null, null)) {
                                         if (cursor != null) {
@@ -1611,12 +1670,12 @@ public class LaunchActivity extends Activity implements ActionBarLayout.ActionBa
                                 final String code,
                                 final TLRPC.TL_wallPaper wallPaper,
                                 final int state) {
-        if (state == 0 && UserConfig.getActivatedAccountsCount() >= 2 && auth != null) {
+        if (state == 0 && UserConfig.getActivatedAccountsCount() >= 2) {
             AlertsCreator.createAccountSelectDialog(this, account -> {
                 if (account != intentAccount) {
                     switchToAccount(account, true);
                 }
-                runLinkRequest(account, username, group, sticker, botUser, botChat, message, hasUrl, messageId, channelId, game, auth, lang, unsupportedUrl, code, wallPaper, 1);
+                runLinkRequest(account, username, group, sticker, botUser, botChat, message, hasUrl, messageId, channelId, game, auth, lang, unsupportedUrl, code, wallPaper, 3);
             }).show();
             return;
         } else if (code != null) {
@@ -1773,7 +1832,7 @@ public class LaunchActivity extends Activity implements ActionBarLayout.ActionBa
                 }
             }));
         } else if (group != null) {
-            if (state == 0) {
+            if (state == 0 || state == 3) {
                 final TLRPC.TL_messages_checkChatInvite req = new TLRPC.TL_messages_checkChatInvite();
                 req.hash = group;
                 requestId[0] = ConnectionsManager.getInstance(intentAccount).sendRequest(req, (response, error) -> AndroidUtilities.runOnUIThread(() -> {

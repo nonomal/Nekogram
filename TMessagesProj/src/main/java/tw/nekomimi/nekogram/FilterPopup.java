@@ -11,17 +11,21 @@ import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.WindowManager;
+import android.widget.GridLayout;
 import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 import android.widget.ScrollView;
 
 import androidx.recyclerview.widget.RecyclerView;
 
+import org.telegram.messenger.AccountInstance;
 import org.telegram.messenger.AndroidUtilities;
 import org.telegram.messenger.ChatObject;
 import org.telegram.messenger.DialogObject;
 import org.telegram.messenger.LocaleController;
 import org.telegram.messenger.MessagesController;
 import org.telegram.messenger.R;
+import org.telegram.messenger.SharedConfig;
 import org.telegram.messenger.UserConfig;
 import org.telegram.tgnet.TLRPC;
 import org.telegram.ui.ActionBar.ActionBar;
@@ -107,42 +111,157 @@ public class FilterPopup {
         }
     }
 
-    public ArrayList<TLRPC.Dialog> getDialogs(int type) {
+    public boolean hasHiddenArchive(int type) {
+        if (!SharedConfig.archiveHidden)
+            return false;
+        ArrayList<TLRPC.Dialog> dialogs = getDialogs(type, 0);
+        if (dialogs == null)
+            return MessagesController.getInstance(currentAccount).hasHiddenArchive();
+        for (TLRPC.Dialog dialog : dialogs) {
+            if (dialog instanceof TLRPC.TL_dialogFolder) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public ArrayList<TLRPC.Dialog> getDialogs(int type, int folderId) {
+        MessagesController messagesController = AccountInstance.getInstance(currentAccount).getMessagesController();
+        ArrayList<TLRPC.Dialog> allDialogs = new ArrayList<>(messagesController.getDialogs(folderId));
+        ArrayList<TLRPC.Dialog> folders = new ArrayList<>();
+        ArrayList<ArrayList<TLRPC.Dialog>> folderDialogs = new ArrayList<>();
+
+        for (TLRPC.Dialog dialog : allDialogs) {
+            if (dialog instanceof TLRPC.TL_dialogFolder) {
+                folders.add(dialog);
+                TLRPC.TL_dialogFolder dialogFolder = (TLRPC.TL_dialogFolder)dialog;
+                folderDialogs.add(new ArrayList<>(messagesController.getDialogs(dialogFolder.folder.id)));
+            }
+        }
+
+        ArrayList<TLRPC.Dialog> dialogs = new ArrayList<>();
         switch (type) {
             case DialogType.Users:
-                return dialogsUsers;
+                for (int i = 0; i < folders.size(); i++) {
+                    folderDialogs.get(i).retainAll(dialogsUsers);
+                    if (!folderDialogs.get(i).isEmpty())
+                        dialogs.add(folders.get(i));
+                }
+                allDialogs.retainAll(dialogsUsers);
+                break;
             case DialogType.Groups:
-                return dialogsGroups;
+                for (int i = 0; i < folders.size(); i++) {
+                    folderDialogs.get(i).retainAll(dialogsGroups);
+                    if (!folderDialogs.get(i).isEmpty())
+                        dialogs.add(folders.get(i));
+                }
+                allDialogs.retainAll(dialogsGroups);
+                break;
             case DialogType.Channels:
-                return dialogsChannels;
+                for (int i = 0; i < folders.size(); i++) {
+                    folderDialogs.get(i).retainAll(dialogsChannels);
+                    if (!folderDialogs.get(i).isEmpty())
+                        dialogs.add(folders.get(i));
+                }
+                allDialogs.retainAll(dialogsChannels);
+                break;
             case DialogType.Bots:
-                return dialogsBots;
+                for (int i = 0; i < folders.size(); i++) {
+                    folderDialogs.get(i).retainAll(dialogsBots);
+                    if (!folderDialogs.get(i).isEmpty())
+                        dialogs.add(folders.get(i));
+                }
+                allDialogs.retainAll(dialogsBots);
+                break;
             case DialogType.Admin:
-                return dialogsAdmin;
+                for (int i = 0; i < folders.size(); i++) {
+                    folderDialogs.get(i).retainAll(dialogsAdmin);
+                    if (!folderDialogs.get(i).isEmpty())
+                        dialogs.add(folders.get(i));
+                }
+                allDialogs.retainAll(dialogsAdmin);
+                break;
             default:
                 return null;
         }
+        if (folderId != 0 && allDialogs.isEmpty()) {
+            allDialogs = new ArrayList<>(messagesController.getDialogs(folderId));
+        }
+        dialogs.addAll(allDialogs);
+        return dialogs;
     }
 
-    public void createMenu(DialogsActivity dialogsActivity, ActionBar actionBar, Activity parentActivity, RecyclerView listView, View fragmentView, int x, int y) {
+    public int getTotalUnreadCount() {
+        MessagesController messagesController = AccountInstance.getInstance(currentAccount).getMessagesController();
+        ArrayList<TLRPC.Dialog> allDialogs = new ArrayList<>(messagesController.getDialogs(0));
+        return getDialogsUnreadCount(allDialogs);
+    }
+
+    private int getDialogsUnreadCount(ArrayList<TLRPC.Dialog> dialogs) {
+        int count = 0;
+        for (TLRPC.Dialog dialog : dialogs) {
+            if (!(dialog instanceof TLRPC.TL_dialogFolder)
+                && !MessagesController.getInstance(currentAccount).isDialogMuted(dialog.id)) {
+                count += dialog.unread_count;
+            }
+        }
+        return count;
+    }
+
+    public void createMenu(DialogsActivity dialogsActivity, ActionBar actionBar, Activity parentActivity, RecyclerView listView, View fragmentView, int x, int y, int folderId) {
         if (actionBar.isActionModeShowed()) {
             return;
         }
         ArrayList<CharSequence> items = new ArrayList<>();
         final ArrayList<Integer> options = new ArrayList<>();
+        ArrayList<Integer> unreadCounts = new ArrayList<>();
+
+        MessagesController messagesController = AccountInstance.getInstance(currentAccount).getMessagesController();
+        ArrayList<TLRPC.Dialog> allDialogs = new ArrayList<>(messagesController.getDialogs(folderId));
 
         items.add(LocaleController.getString("All", R.string.All));
         options.add(DialogType.All);
-        items.add(LocaleController.getString("User", R.string.User));
-        options.add(DialogType.Users);
-        items.add(LocaleController.getString("Group", R.string.Group));
-        options.add(DialogType.Groups);
-        items.add(LocaleController.getString("Channel", R.string.Channel));
-        options.add(DialogType.Channels);
-        items.add(LocaleController.getString("Bot", R.string.Bot));
-        options.add(DialogType.Bots);
-        items.add(LocaleController.getString("Admin", R.string.Admin));
-        options.add(DialogType.Admin);
+        unreadCounts.add(getDialogsUnreadCount(allDialogs));
+
+        ArrayList<TLRPC.Dialog> temp = new ArrayList<>(allDialogs);
+        temp.retainAll(dialogsUsers);
+        if (!temp.isEmpty()) {
+            items.add(LocaleController.getString("Users", R.string.Users));
+            options.add(DialogType.Users);
+            unreadCounts.add(getDialogsUnreadCount(temp));
+        }
+
+        temp = new ArrayList<>(allDialogs);
+        temp.retainAll(dialogsGroups);
+        if (!temp.isEmpty()) {
+            items.add(LocaleController.getString("Groups", R.string.Groups));
+            options.add(DialogType.Groups);
+            unreadCounts.add(getDialogsUnreadCount(temp));
+        }
+
+        temp = new ArrayList<>(allDialogs);
+        temp.retainAll(dialogsChannels);
+        if (!temp.isEmpty()) {
+            items.add(LocaleController.getString("Channels", R.string.Channels));
+            options.add(DialogType.Channels);
+            unreadCounts.add(getDialogsUnreadCount(temp));
+        }
+
+        temp = new ArrayList<>(allDialogs);
+        temp.retainAll(dialogsBots);
+        if (!temp.isEmpty()) {
+            items.add(LocaleController.getString("Bots", R.string.Bots));
+            options.add(DialogType.Bots);
+            unreadCounts.add(getDialogsUnreadCount(temp));
+        }
+
+        temp = new ArrayList<>(allDialogs);
+        temp.retainAll(dialogsAdmin);
+        if (!temp.isEmpty()) {
+            items.add(LocaleController.getString("Admins", R.string.Admins));
+            options.add(DialogType.Admin);
+            unreadCounts.add(getDialogsUnreadCount(temp));
+        }
 
         if (scrimPopupWindow != null) {
             scrimPopupWindow.dismiss();
@@ -180,13 +299,24 @@ public class FilterPopup {
         popupLayout.setBackgroundDrawable(shadowDrawable);
 
         LinearLayout linearLayout = new LinearLayout(parentActivity);
+        GridLayout gridLayout = new GridLayout(parentActivity);
+        RelativeLayout cascadeLayout = new RelativeLayout(parentActivity) {
+            @Override
+            protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+                super.onMeasure(widthMeasureSpec, heightMeasureSpec);
+                setMeasuredDimension(gridLayout.getMeasuredWidth(), getMeasuredHeight());
+            }
+        };
+        cascadeLayout.addView(gridLayout, LayoutHelper.createFrame(LayoutHelper.WRAP_CONTENT, LayoutHelper.WRAP_CONTENT));
+        cascadeLayout.addView(linearLayout, LayoutHelper.createFrame(LayoutHelper.MATCH_PARENT, LayoutHelper.WRAP_CONTENT));
+
         ScrollView scrollView;
         if (Build.VERSION.SDK_INT >= 21) {
             scrollView = new ScrollView(parentActivity, null, 0, R.style.scrollbarShapeStyle) {
                 @Override
                 protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
                     super.onMeasure(widthMeasureSpec, heightMeasureSpec);
-                    setMeasuredDimension(linearLayout.getMeasuredWidth(), getMeasuredHeight());
+                    setMeasuredDimension(cascadeLayout.getMeasuredWidth(), getMeasuredHeight());
                 }
             };
         } else {
@@ -195,21 +325,31 @@ public class FilterPopup {
         scrollView.setClipToPadding(false);
         popupLayout.addView(scrollView, LayoutHelper.createFrame(LayoutHelper.WRAP_CONTENT, LayoutHelper.WRAP_CONTENT));
 
-        linearLayout.setMinimumWidth(AndroidUtilities.dp(200));
+        gridLayout.setColumnCount(2);
+        gridLayout.setMinimumWidth(AndroidUtilities.dp(200));
         linearLayout.setOrientation(LinearLayout.VERTICAL);
         for (int a = 0, N = items.size(); a < N; a++) {
             ActionBarMenuSubItem cell = new ActionBarMenuSubItem(parentActivity);
             cell.setText(items.get(a).toString());
-            linearLayout.addView(cell);
+            ActionBarMenuSubItem cell2 = new ActionBarMenuSubItem(parentActivity);
+            linearLayout.addView(cell2);
+            gridLayout.addView(cell);
+            UnreadCountBadgeView badge = new UnreadCountBadgeView(parentActivity, unreadCounts.get(a).toString());
+            gridLayout.addView(badge);
+            if (unreadCounts.get(a) == 0)
+                badge.setVisibility(View.GONE);
+            else
+                badge.setVisibility(View.VISIBLE);
             final int i = a;
-            cell.setOnClickListener(v1 -> {
+            cell2.setOnClickListener(v1 -> {
                 dialogsActivity.updateDialogsType(options.get(i));
                 if (scrimPopupWindow != null) {
                     scrimPopupWindow.dismiss();
                 }
             });
         }
-        scrollView.addView(linearLayout, LayoutHelper.createScroll(LayoutHelper.WRAP_CONTENT, LayoutHelper.WRAP_CONTENT, Gravity.LEFT | Gravity.TOP));
+
+        scrollView.addView(cascadeLayout, LayoutHelper.createScroll(LayoutHelper.WRAP_CONTENT, LayoutHelper.WRAP_CONTENT, Gravity.LEFT | Gravity.TOP));
         scrimPopupWindow = new ActionBarPopupWindow(popupLayout, LayoutHelper.WRAP_CONTENT, LayoutHelper.WRAP_CONTENT) {
             @Override
             public void dismiss() {

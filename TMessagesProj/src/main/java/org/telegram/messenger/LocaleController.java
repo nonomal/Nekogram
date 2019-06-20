@@ -38,6 +38,8 @@ import java.util.HashMap;
 import java.util.Locale;
 import java.util.TimeZone;
 
+import tw.nekomimi.nekogram.NekoConfig;
+
 public class LocaleController {
 
     static final int QUANTITY_OTHER = 0x0000;
@@ -319,6 +321,57 @@ public class LocaleController {
         localeInfo.builtIn = true;
         languages.add(localeInfo);
         languagesDict.put(localeInfo.shortName, localeInfo);
+
+        localeInfo = new LocaleInfo();
+        localeInfo.name = "瓜体中文";
+        localeInfo.nameEnglish = "Duangified Chinese";
+        localeInfo.shortName = "duang_zh_cn";
+        localeInfo.baseLangCode = "zh_hans_raw";
+        localeInfo.isRtl = false;
+        localeInfo.pathToFile = "unofficial";
+        localeInfo.pluralLangCode = "zh";
+        localeInfo.builtIn = true;
+        languages.add(localeInfo);
+        languagesDict.put(localeInfo.getKey(), localeInfo);
+        languagesDict.put("zh_cn", localeInfo);
+
+        localeInfo = new LocaleInfo();
+        localeInfo.name = "简体中文";
+        localeInfo.nameEnglish = "Chinese (Simplified, @zh_CN)";
+        localeInfo.shortName = "classic_zh_cn";
+        localeInfo.baseLangCode = "zh_hans_raw";
+        localeInfo.isRtl = false;
+        localeInfo.pathToFile = "unofficial";
+        localeInfo.pluralLangCode = "zh";
+        localeInfo.builtIn = true;
+        languages.add(localeInfo);
+        languagesDict.put(localeInfo.getKey(), localeInfo);
+
+        localeInfo = new LocaleInfo();
+        localeInfo.name = "正體中文";
+        localeInfo.nameEnglish = "Chinese (zh-Hant-TW)";
+        localeInfo.shortName = "taiwan";
+        localeInfo.baseLangCode = "zh_hant_raw";
+        localeInfo.isRtl = false;
+        localeInfo.pathToFile = "unofficial";
+        localeInfo.pluralLangCode = "zh";
+        localeInfo.builtIn = true;
+        languages.add(localeInfo);
+        languagesDict.put(localeInfo.getKey(), localeInfo);
+        languagesDict.put("zh_tw", localeInfo);
+
+        localeInfo = new LocaleInfo();
+        localeInfo.name = "日本語";
+        localeInfo.nameEnglish = "Japanese";
+        localeInfo.shortName = "ja_raw";
+        localeInfo.baseLangCode = null;
+        localeInfo.isRtl = false;
+        localeInfo.pathToFile = "unofficial";
+        localeInfo.pluralLangCode = "ja";
+        localeInfo.builtIn = true;
+        languages.add(localeInfo);
+        languagesDict.put(localeInfo.getKey(), localeInfo);
+        languagesDict.put("ja", localeInfo);
 
         loadOtherLanguages();
         if (remoteLanguages.isEmpty()) {
@@ -1191,7 +1244,7 @@ public class LocaleController {
         if (languageOverride != null) {
             LocaleInfo toSet = currentLocaleInfo;
             currentLocaleInfo = null;
-            applyLanguage(toSet, false, false, UserConfig.selectedAccount);
+            applyLanguage(toSet, false, true, UserConfig.selectedAccount);
         } else {
             Locale newLocale = newConfig.locale;
             if (newLocale != null) {
@@ -1422,7 +1475,7 @@ public class LocaleController {
         isRTL = lang.length() == 2 && (lang.equals("ar") || lang.equals("fa") || lang.equals("he") || lang.equals("iw")) ||
                 lang.startsWith("ar_") || lang.startsWith("fa_") || lang.startsWith("he_") || lang.startsWith("iw_")
                 || currentLocaleInfo != null && currentLocaleInfo.isRtl;
-        nameDisplayOrder = lang.equals("ko") ? 2 : 1;
+        nameDisplayOrder = NekoConfig.nameOrder;
 
         formatterDayMonth = createFormatter(locale, getStringInternal("formatterMonth", R.string.formatterMonth), "dd MMM");
         formatterYear = createFormatter(locale, getStringInternal("formatterYear", R.string.formatterYear), "dd.MM.yy");
